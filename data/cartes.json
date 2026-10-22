@@ -1,0 +1,38 @@
+{
+  "chance": [
+    { "id": "chance-01", "texte": "Le mistral vous pousse dans le dos : avancez jusqu'à la case Départ et recevez 200 €.", "effet": { "type": "aller_a", "case": 0 } },
+    { "id": "chance-02", "texte": "Envie d'une baignade au calme : rendez-vous à Malmousque. Si vous passez par la case Départ, recevez 200 €.", "effet": { "type": "aller_a", "case": 24 } },
+    { "id": "chance-03", "texte": "Concert sur le Cours Julien ! Avancez jusqu'à la Rue des Trois-Mages. Si vous passez par la case Départ, recevez 200 €.", "effet": { "type": "aller_a", "case": 11 } },
+    { "id": "chance-04", "texte": "Vous prenez le TER pour Aubagne : allez à la Gare de la Blancarde. Si vous passez par la case Départ, recevez 200 €.", "effet": { "type": "aller_a", "case": 15 } },
+    { "id": "chance-05", "texte": "Allez admirer les pointus amarrés : rendez-vous au Vieux-Port.", "effet": { "type": "aller_a", "case": 39 } },
+    { "id": "chance-06", "texte": "Coup de mistral de face, impossible d'avancer : reculez de trois cases.", "effet": { "type": "reculer", "cases": 3 } },
+    { "id": "chance-07", "texte": "Vous avez klaxonné toute la nuit pour fêter la victoire de l'OM : allez directement au Château d'If, sans passer par la case Départ ni recevoir 200 €.", "effet": { "type": "prison" } },
+    { "id": "chance-08", "texte": "Un pêcheur du Vallon des Auffes vient vous chercher en barque : vous êtes libéré du Château d'If. Cette carte peut être conservée ou échangée.", "effet": { "type": "sortie_prison" } },
+    { "id": "chance-09", "texte": "Le mistral a fait s'envoler vos tuiles : payez 25 € par maison et 100 € par hôtel.", "effet": { "type": "reparations", "maison": 25, "hotel": 100 } },
+    { "id": "chance-10", "texte": "Travaux de voirie devant chez vous : payez 40 € par maison et 115 € par hôtel.", "effet": { "type": "reparations", "maison": 40, "hotel": 115 } },
+    { "id": "chance-11", "texte": "Excès de vitesse sur la Corniche : amende de 15 €.", "effet": { "type": "payer", "montant": 15 } },
+    { "id": "chance-12", "texte": "Inscription de vos enfants à l'école de voile du Roucas-Blanc : payez 150 €.", "effet": { "type": "payer", "montant": 150 } },
+    { "id": "chance-13", "texte": "Stationnement en double file devant la boulangerie : amende de 20 €.", "effet": { "type": "payer", "montant": 20 } },
+    { "id": "chance-14", "texte": "Vos parts dans une savonnerie marseillaise vous versent un dividende : recevez 50 €.", "effet": { "type": "recevoir", "montant": 50 } },
+    { "id": "chance-15", "texte": "Votre cabanon des Goudes est loué tout l'été : recevez 150 €.", "effet": { "type": "recevoir", "montant": 150 } },
+    { "id": "chance-16", "texte": "Vous remportez le concours de pétanque du quartier : recevez 100 €.", "effet": { "type": "recevoir", "montant": 100 } }
+  ],
+  "communaute": [
+    { "id": "communaute-01", "texte": "La navette du Frioul vous dépose à la case Départ : recevez 200 €.", "effet": { "type": "aller_a", "case": 0 } },
+    { "id": "communaute-02", "texte": "Erreur de la banque en votre faveur, peuchère ! Recevez 200 €.", "effet": { "type": "recevoir", "montant": 200 } },
+    { "id": "communaute-03", "texte": "Piqûre d'oursin dans les calanques : payez 50 € de frais de médecin.", "effet": { "type": "payer", "montant": 50 } },
+    { "id": "communaute-04", "texte": "Vos savons de Marseille s'arrachent au marché : recevez 50 €.", "effet": { "type": "recevoir", "montant": 50 } },
+    { "id": "communaute-05", "texte": "La Bonne Mère veille sur vous : vous êtes libéré du Château d'If. Cette carte peut être conservée ou échangée.", "effet": { "type": "sortie_prison" } },
+    { "id": "communaute-06", "texte": "Pris à pêcher dans le Vieux-Port sans permis : allez directement au Château d'If, sans passer par la case Départ ni recevoir 200 €.", "effet": { "type": "prison" } },
+    { "id": "communaute-07", "texte": "Vous avez oublié votre cabas : retournez au Cours Belsunce (sans passer par la case Départ).", "effet": { "type": "aller_a", "case": 1, "recul": true } },
+    { "id": "communaute-08", "texte": "Votre revenu annuel tombe enfin : recevez 100 €.", "effet": { "type": "recevoir", "montant": 100 } },
+    { "id": "communaute-09", "texte": "C'est votre anniversaire, et chacun vous offre une boîte de navettes : chaque joueur vous donne 10 €.", "effet": { "type": "anniversaire", "montant": 10 } },
+    { "id": "communaute-10", "texte": "Les impôts vous remboursent un trop-perçu : recevez 20 €.", "effet": { "type": "recevoir", "montant": 20 } },
+    { "id": "communaute-11", "texte": "Payez l'assurance de votre pointu : 50 €.", "effet": { "type": "payer", "montant": 50 } },
+    { "id": "communaute-12", "texte": "Vous avez laissé votre parasol sur la plage du Prophète : payez une amende de 10 € ou tirez une carte Chance.", "effet": { "type": "amende_ou_chance", "montant": 10 } },
+    { "id": "communaute-13", "texte": "Frais d'hôpital à la Timone après un match de foot entre amis : payez 100 €.", "effet": { "type": "payer", "montant": 100 } },
+    { "id": "communaute-14", "texte": "Votre livret d'épargne vous rapporte des intérêts : recevez 25 €.", "effet": { "type": "recevoir", "montant": 25 } },
+    { "id": "communaute-15", "texte": "Vous héritez de la recette secrète de bouillabaisse de votre grand-tante… et de 100 €.", "effet": { "type": "recevoir", "montant": 100 } },
+    { "id": "communaute-16", "texte": "Deuxième prix du concours de chants de supporters au Vélodrome : recevez 10 €.", "effet": { "type": "recevoir", "montant": 10 } }
+  ]
+}
