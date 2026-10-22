@@ -51,8 +51,8 @@ export class Controleur {
       el('div', { class: 'jeu' },
         el('div', { class: 'plateau-conteneur' },
           this.elPlateau = el('div', { class: 'plateau' }),
-          // Bulle « Untel boit 2 gorgées » du mode Pastis (le journal l'annonce aux lecteurs d'écran).
-          this.elBoisson = el('div', { class: 'bulle-boisson', 'aria-hidden': 'true', hidden: true })),
+          // Bulle « Untel boit 2 gorgées » du mode Pastis, fermée par le bouton « Santé ! ».
+          this.elBoisson = el('div', { class: 'bulle-boisson', role: 'alertdialog', 'aria-labelledby': 'texte-boisson', hidden: true })),
         el('aside', { class: 'barre-laterale' },
           el('section', { class: 'commandes', 'aria-label': 'Actions du tour' },
             this.elConnexion = el('p', { class: 'alerte bandeau-connexion', role: 'status', hidden: true }),
@@ -329,18 +329,38 @@ export class Controleur {
     }
   }
 
-  // Mode Pastis : bulle animée au-dessus du plateau.
-  async montrerBoisson(ev) {
+  // Mode Pastis : bulle au-dessus du plateau, qui reste affichée jusqu'au clic sur « Santé ! »
+  // (ou Entrée / Échap). La partie reprend ensuite.
+  montrerBoisson(ev) {
     const noms = ev.joueurs.map((id) => this.partie.etat.joueurs[id].nom);
     const verbe = noms.length > 1 ? 'boivent' : 'boit';
-    this.elBoisson.className = `bulle-boisson ${ev.culSec ? 'cul-sec' : ''}`;
-    this.elBoisson.replaceChildren(
-      el('span', { class: 'verre' }, ev.culSec ? '🥃💥' : '🥃'),
-      el('strong', {}, `${listeNoms(noms)} ${verbe} ${libelleBoisson(ev)} !`),
-      el('small', {}, ev.raison));
-    this.elBoisson.hidden = false;
-    await attendre(1300 * this.facteur);
-    this.elBoisson.hidden = true;
+    const texte = `${listeNoms(noms)} ${verbe} ${libelleBoisson(ev)} !`;
+    const focusAvant = document.activeElement;
+    return new Promise((resoudre) => {
+      const fermer = () => {
+        document.removeEventListener('keydown', surTouche);
+        this.elBoisson.hidden = true;
+        this.elBoisson.replaceChildren();
+        if (focusAvant && document.contains(focusAvant)) focusAvant.focus({ preventScroll: true });
+        resoudre();
+      };
+      const surTouche = (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          fermer();
+        }
+      };
+      const bouton = el('button', { type: 'button', class: 'btn btn-sante', onclick: fermer }, ev.culSec ? 'Cul sec ! 🥃' : 'Santé ! 🥃');
+      this.elBoisson.className = `bulle-boisson ${ev.culSec ? 'cul-sec' : ''}`;
+      this.elBoisson.replaceChildren(
+        el('span', { class: 'verre', 'aria-hidden': 'true' }, ev.culSec ? '🥃💥' : '🥃'),
+        el('strong', { id: 'texte-boisson' }, texte),
+        el('small', {}, ev.raison),
+        bouton);
+      this.elBoisson.hidden = false;
+      document.addEventListener('keydown', surTouche);
+      bouton.focus({ preventScroll: true });
+    });
   }
 
   montrerReglesPastis() {

@@ -64,7 +64,7 @@ Un mode de jeu pour les adultes, à choisir avant de lancer la partie, sur l'acc
 - compléter un quartier : les autres boivent 2 gorgées ; faillite : cul sec ;
 - 5 cartes Chance et 5 cartes Caisse de communauté sont remplacées par des cartes à boire (tournée générale, cul sec, le joueur suivant ou précédent boit…).
 
-Chaque gorgée s'affiche dans une bulle au centre du plateau et dans le journal. Chaque joueur a son compteur, et la fin de partie annonce la « plus grosse descente ». Le jeu rappelle qu'une gorgée peut être d'eau ou de sirop, et qu'on ne prend pas le volant après.
+Chaque gorgée s'affiche dans une bulle au centre du plateau, qui reste jusqu'à ce qu'on clique sur **Santé !** (ou qu'on appuie sur Entrée ou Échap), et s'inscrit dans le journal. Chaque joueur a son compteur, et la fin de partie annonce la « plus grosse descente ». Le jeu rappelle qu'une gorgée peut être d'eau ou de sirop, et qu'on ne prend pas le volant après.
 
 ## Le plateau marseillais
 
@@ -125,7 +125,7 @@ Le cahier des charges laisse quelques points ouverts. Voici les choix retenus, l
 - Les couleurs des quartiers ne changent pas, pour que le plateau reste lisible.
 - Les gorgées sont calculées par le moteur, comme l'argent : elles sont identiques sur tous les écrans en ligne et sauvegardées avec la partie. Un cul sec compte pour 5 gorgées dans le total.
 - Les ordinateurs « boivent » aussi : leurs compteurs servent à animer la partie, à chacun de décider si un humain boit pour eux.
-- Les gorgées ne demandent aucune décision : la partie avance au même rythme qu'en mode classique. Le serveur laisse le temps d'afficher chaque bulle avant de faire jouer un ordinateur.
+- Les gorgées ne demandent aucune décision de jeu, mais chaque bulle attend son « Santé ! » : la partie reprend sur cet écran une fois la bulle fermée (les ordinateurs d'une partie locale attendent aussi). En ligne, chacun ferme les bulles sur son propre écran ; le serveur continue de jouer, et les mises à jour reçues entre-temps s'affichent ensuite dans l'ordre.
 
 **Ordinateurs et interface**
 - L'IA propose au plus un échange par tour, et seulement un tour sur trois, pour ne pas harceler les humains.

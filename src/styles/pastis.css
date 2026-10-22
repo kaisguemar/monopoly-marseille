@@ -83,13 +83,16 @@ body.theme-pastis {
   font-size: 2.6cqi; box-shadow: 0 .4em 1.4em rgba(6, 39, 102, .45);
   transform: translate(-50%, -50%);
   animation: bulle-boisson .45s cubic-bezier(.2, 1.6, .4, 1) both;
-  pointer-events: none;
 }
 .bulle-boisson[hidden] { display: none; }
 .bulle-boisson .verre { font-size: 2.2em; line-height: 1; animation: trinquer .6s ease-in-out .2s 2 alternate; }
 .bulle-boisson strong { font-size: 1.1em; }
 .bulle-boisson small { font-size: .7em; }
 .bulle-boisson.cul-sec { background: #0a3a9e; color: #fff; border-color: #ffd200; }
+.bulle-boisson .btn-sante { margin-top: .4em; font-size: .75em; min-height: 44px; background: #0a3a9e; color: #fff; border-color: #062766; }
+.bulle-boisson .btn-sante:hover { background: #062766; }
+.bulle-boisson.cul-sec .btn-sante { background: #ffd200; color: #062766; border-color: #ffd200; }
+.bulle-boisson.cul-sec .btn-sante:hover { background: #fff; }
 @keyframes bulle-boisson { from { transform: translate(-50%, -50%) scale(.3); opacity: 0; } }
 @keyframes trinquer { to { transform: rotate(-25deg) translateY(-.15em); } }
 @media (max-width: 600px) { .bulle-boisson { font-size: 4.2cqi; max-width: 90%; } }
