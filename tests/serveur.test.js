@@ -29,10 +29,15 @@ describe('fichiers statiques', () => {
     assert.match(js.headers.get('content-type'), /javascript/);
     const plateau = await (await fetch(`${srv.base}/data/plateau.json`)).json();
     assert.equal(plateau.cases.length, 40);
+    for (const image of ['/assets/decor/corniche.svg', '/assets/batiments/maison-facade.svg', '/assets/batiments/hotel-toit.svg']) {
+      const r = await fetch(`${srv.base}${image}`);
+      assert.equal(r.status, 200, image);
+      assert.match(r.headers.get('content-type'), /image\/svg\+xml/);
+    }
   });
 
   test('ne sert ni le serveur, ni ses sauvegardes, ni les fichiers cachés', async () => {
-    for (const chemin of ['/serveur/salons.js', '/serveur/salons.json', '/package.json', '/.git/config', '/src/../serveur/serveur.js', '/%2e%2e/package.json', '/data/.hidden']) {
+    for (const chemin of ['/serveur/salons.js', '/serveur/salons.json', '/package.json', '/outils/generer-images.mjs', '/.git/config', '/src/../serveur/serveur.js', '/%2e%2e/package.json', '/data/.hidden']) {
       const r = await fetch(`${srv.base}${chemin}`);
       assert.equal(r.status, 404, chemin);
     }

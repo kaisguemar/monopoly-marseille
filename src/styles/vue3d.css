@@ -1,48 +1,73 @@
-/* Vue 3D : scène inclinée, décor autour du plateau, maisons et hôtels en volume. */
+/* Vue 3D : caméra mobile, horizon sur la Corniche, mer animée, maisons et hôtels texturés. */
 
-.scene { position: relative; width: 100%; height: 100%; transition: transform .6s ease; }
+.camera { position: relative; width: 100%; height: 100%; }
+.scene { position: relative; width: 100%; height: 100%; }
 .scene .plateau { position: relative; }
-.scene-decor, .tranche { display: none; }
+.horizon, .scene-decor, .tranche, .commandes-3d, .aide-3d { display: none; }
 .bouton-vue { display: flex; margin: 0 0 .5rem auto; }
 
-/* Maisons et hôtels, vue à plat : silhouette pleine à la couleur du propriétaire.
-   Ils prennent la place du nom du quartier dans le bandeau de couleur. */
+/* Maisons et hôtels, vue à plat : la façade en image, murs à la couleur du propriétaire
+   (légèrement adoucie, comme un enduit). Ils prennent la place du nom du quartier. */
 .bandeau.construit .bandeau-nom { display: none; }
 .bandeau .constructions:empty { display: none; }
-.batiment { position: relative; display: inline-block; flex: none; }
+.batiment {
+  --mur: color-mix(in srgb, var(--c) 82%, #f6ead2);
+  position: relative; display: inline-block; flex: none;
+}
 .batiment .pan { display: none; }
 .maison {
-  width: 1.15em; height: 1.15em; background: var(--c);
+  width: 1.15em; height: 1.15em;
+  background: url(../../assets/batiments/maison-icone.svg) 0 0 / 100% 100% no-repeat, var(--mur);
   clip-path: polygon(50% 0, 100% 45%, 100% 100%, 0 100%, 0 45%);
 }
 .hotel {
-  display: inline-grid; place-items: center;
   width: 2em; height: 1.3em; border-radius: .15em;
-  background: var(--c); color: #fff;
+  background: url(../../assets/batiments/hotel-icone.svg) 0 0 / 100% 100% no-repeat, var(--mur);
 }
-.hotel::after { content: "H"; font-weight: 800; font-size: .85em; }
 
 /* ------------------------------------------------------------------------- */
-/* Vue 3D                                                                     */
+/* Vue 3D : la caméra                                                         */
 /* ------------------------------------------------------------------------- */
 
 .plateau-conteneur.vue-3d {
-  --incl: 50deg;
-  --epaisseur: 1.4cqi;
   aspect-ratio: 1 / .84;
-  perspective: 240cqi;
-  perspective-origin: 50% 20%;
   overflow: hidden;
   border-radius: 14px;
-  background: linear-gradient(180deg, #8ecdf0 0%, #cfe9f7 32%, #fdf3dc 46%, #fdf3dc 100%);
+  /* Mer du large, sous l'horizon, là où le disque de mer du plateau ne va pas. */
+  background: #1b5f92;
   box-shadow: var(--ombre);
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
 }
+.plateau-conteneur.vue-3d.manipulation { cursor: grabbing; }
+/* Les doigts font tourner le plateau, partout : même sur le journal, qui défilerait sinon
+   (le navigateur annulerait alors le geste). */
+.plateau-conteneur.vue-3d * { touch-action: none; }
+/* Perspective et point de fuite : mêmes valeurs que ECRAN dans src/ui/camera3d.js. */
+.vue-3d .camera { perspective: 240cqi; perspective-origin: 50% 20%; }
+
+/* Le plateau et sa mer suivent la caméra : décalage, inclinaison, rotation et zoom, posés par
+   vue3d.js sur chaque scène (transform). Hors de la vue 3D, aucune transformation ne reste. */
 .vue-3d .scene {
+  position: absolute; left: 0; top: 0;
   height: auto; aspect-ratio: 1;
   transform-style: preserve-3d;
-  transform: translateY(-3%) rotateX(var(--incl)) scale(.74);
 }
-.vue-3d .scene-decor { display: block; position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; }
+.plateau-conteneur:not(.vue-3d) .scene { transform: none !important; }
+.vue-3d .scene-decor { display: block; pointer-events: none; }
+/* Netteté : sous une perspective, le navigateur dessine le plateau à sa taille de mise en page
+   puis l'agrandit, ce qui le rend flou quand on zoome. Aux forts zooms, la caméra le met donc
+   en page en plus grand (--resolution, 1 ou 2) et le réduit d'autant : même image, plus de détails.
+   Les unités cqi du plateau suivent la taille de sa scène. */
+.vue-3d .scene-plateau {
+  container-type: inline-size;
+  width: calc(var(--resolution, 1) * 100%);
+  left: calc((1 - var(--resolution, 1)) * 50cqi);
+  top: calc((1 - var(--resolution, 1)) * 50cqi);
+}
+/* Ce qui se tient debout (pions, bateaux) fait toujours face à la caméra : --face-camera est posée
+   par vue3d.js sur les cases de pions et sur les bateaux. */
 
 /* Toute la chaîne jusqu'aux pions et aux bâtiments reste en 3D. */
 .vue-3d .plateau,
@@ -53,142 +78,261 @@
 .vue-3d .pions,
 .vue-3d .decor { transform-style: preserve-3d; }
 
+/* Le plateau est posé sur ses tranches, épaisses de 1,4cqi. */
 .vue-3d .plateau {
-  transform: translateZ(var(--epaisseur));
+  transform: translateZ(1.4cqi);
   box-shadow: none;
   border-radius: 3px;
 }
 .vue-3d .case { overflow: visible; }
+/* Les cases sont dans le même plan que le plateau : sans cela, un toucher sur une case est
+   attribué au plateau, et sa fiche ne s'ouvre pas. */
+.vue-3d .plateau { pointer-events: none; }
+.vue-3d .case, .vue-3d .centre { pointer-events: auto; }
 .vue-3d .constructions { filter: none; gap: .15em; font-size: 1.6em; }
 
-/* Tranche du plateau, côté joueur. */
-.vue-3d .tranche {
-  display: block; position: absolute; left: 0; top: 100%;
-  width: 100%; height: var(--epaisseur);
-  background: linear-gradient(180deg, #7a4e2a, #4f3018);
-  transform-origin: top; transform: rotateX(90deg);
+/* Tranches du plateau, sur ses quatre côtés. */
+.vue-3d .tranche { display: block; position: absolute; background: linear-gradient(180deg, #7a4e2a, #4f3018); }
+.vue-3d .tranche-avant, .vue-3d .tranche-arriere { left: 0; width: 100%; height: 1.4cqi; transform-origin: top; transform: rotateX(90deg); }
+.vue-3d .tranche-avant { top: 100%; }
+.vue-3d .tranche-arriere { top: 0; }
+.vue-3d .tranche-gauche, .vue-3d .tranche-droite {
+  top: 0; width: 1.4cqi; height: 100%; transform-origin: left; transform: rotateY(-90deg);
+  background: linear-gradient(90deg, #7a4e2a, #4f3018);
 }
+.vue-3d .tranche-gauche { left: 0; }
+.vue-3d .tranche-droite { left: 100%; }
 
-/* Pions debout, face à la caméra. */
-.vue-3d .pion {
-  transform-origin: 50% 100%;
-  transform: rotateX(calc(-1 * var(--incl)));
-}
-.vue-3d .pion-actif { animation: sautille-3d 1.2s ease-in-out infinite; }
-@keyframes sautille-3d {
-  0%, 100% { transform: rotateX(calc(-1 * var(--incl))) scale(1.2); }
-  50% { transform: rotateX(calc(-1 * var(--incl))) translateY(-.5em) scale(1.2); }
-}
+/* Pions debout ; le pion actif sautille à la verticale. */
+.vue-3d .pion { transform-origin: 50% 100%; transform: var(--face-camera, rotateX(-54deg)); transition: none; }
+.vue-3d .pion-actif { animation: saut-pion 1.2s ease-in-out infinite; scale: 1.2; }
+@keyframes saut-pion { 50% { translate: 0 0 .5em; } }
 
-/* Bâtiments en volume : chaque face est un élément positionné dans l'espace.
-   --l : longueur, --p : profondeur, --h : hauteur des murs, --H : hauteur des pignons. */
+/* ------------------------------------------------------------------------- */
+/* Maisons et hôtels en volume                                                */
+/* --l : longueur, --p : profondeur, --h : hauteur des murs, --H : hauteur au faîtage.  */
+/* Mêmes proportions que MAISON et HOTEL dans outils/generer-images.mjs.      */
+/* ------------------------------------------------------------------------- */
+
 .vue-3d .batiment {
-  --l: 1.25em; --p: 1.2em; --h: 1.25em; --H: 1.85em;
+  --l: 1.25em; --p: 1.2em; --h: 1.1em; --H: 1.52em; --pente: 35deg; --debord: .06em;
   width: var(--l); height: var(--p);
   background: none; clip-path: none; border-radius: 0;
+  /* Ombre portée sur le plateau. */
+  box-shadow: .2em .28em .32em rgba(30, 18, 8, .38);
 }
-.vue-3d .hotel { --l: 2.6em; --p: 1.4em; --h: 2em; --H: 2em; }
-.vue-3d .hotel::after { display: none; }
+.vue-3d .hotel { --l: 2.6em; --p: 1.4em; --h: 2.1em; --H: 2.1em; }
 .vue-3d .batiment .pan {
   display: block; position: absolute; left: 0; top: 0;
-  background: var(--c);
-  /* Chaque face a sa lumière : façade éclairée, toit et côtés plus sombres. */
+  background-color: var(--mur);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  /* Chaque face a sa lumière : façade éclairée, arrière et côté droit à l'ombre. */
   filter: brightness(var(--lum, 1));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .45);
 }
 .vue-3d .pan.avant, .vue-3d .pan.arriere {
   width: var(--l); height: var(--h);
   transform-origin: top; transform: rotateX(90deg);
 }
-.vue-3d .pan.avant { top: var(--p); --lum: 1.3; }
-.vue-3d .pan.arriere { --lum: .75; }
+.vue-3d .pan.avant { top: var(--p); --lum: 1.06; }
+.vue-3d .pan.arriere { --lum: .78; }
 .vue-3d .pan.gauche, .vue-3d .pan.droite {
   width: var(--H); height: var(--p);
   transform-origin: left; transform: rotateY(-90deg);
 }
-.vue-3d .pan.gauche { --lum: 1.05; }
-.vue-3d .pan.droite { left: var(--l); --lum: .8; }
-/* Pignons de la maison (murs latéraux en pentagone). */
+.vue-3d .pan.gauche { --lum: .95; }
+.vue-3d .pan.droite { left: var(--l); --lum: .84; }
+
+/* Maison : pignons en pentagone (murs de --h, puis pointe jusqu'au faîtage : 1,1 / 1,52)
+   et toit à deux pans de tuiles, débordant un peu des murs. */
+.vue-3d .maison .pan.avant { background-image: url(../../assets/batiments/maison-facade.svg); }
+.vue-3d .maison .pan.arriere { background-image: url(../../assets/batiments/maison-arriere.svg); }
 .vue-3d .maison .pan.gauche, .vue-3d .maison .pan.droite {
-  clip-path: polygon(0 0, 68% 0, 100% 50%, 68% 100%, 0 100%);
+  background-image: url(../../assets/batiments/maison-pignon.svg);
+  clip-path: polygon(0 0, 72.4% 0, 100% 50%, 72.4% 100%, 0 100%);
 }
-/* Toit à deux pans, plus sombre. */
-.vue-3d .pan.toit-avant, .vue-3d .pan.toit-arriere { width: var(--l); height: calc(var(--p) * .7072); --lum: .55; }
-.vue-3d .pan.toit-avant { top: calc(var(--p) * .2928); transform-origin: bottom; transform: translateZ(var(--h)) rotateX(-45deg); --lum: .7; }
-.vue-3d .pan.toit-arriere { transform-origin: top; transform: translateZ(var(--h)) rotateX(45deg); }
-/* Hôtel : fenêtres sur les façades et « H » sur le toit. */
-.vue-3d .hotel .pan.avant, .vue-3d .hotel .pan.arriere, .vue-3d .hotel .pan.gauche, .vue-3d .hotel .pan.droite {
-  background:
-    repeating-linear-gradient(90deg, transparent 0 .2em, rgba(255, 255, 255, .55) .2em .4em, transparent .4em .55em),
-    var(--c);
+.vue-3d .pan.toit-avant, .vue-3d .pan.toit-arriere {
+  /* --rampant : longueur d'un pan, du bord du mur au faîtage. */
+  --rampant: calc(var(--p) / 2 / cos(var(--pente)));
+  left: calc(-1 * var(--debord));
+  width: calc(var(--l) + 2 * var(--debord));
+  height: calc(var(--rampant) + var(--debord));
 }
+.vue-3d .pan.toit-avant {
+  top: calc(var(--p) - var(--rampant));
+  transform-origin: 50% var(--rampant);
+  transform: translateZ(var(--h)) rotateX(calc(-1 * var(--pente)));
+  background-image: url(../../assets/batiments/maison-toit.svg);
+  --lum: 1;
+}
+.vue-3d .pan.toit-arriere {
+  top: calc(-1 * var(--debord));
+  transform-origin: 50% var(--debord);
+  transform: translateZ(var(--h)) rotateX(var(--pente));
+  background-image: url(../../assets/batiments/maison-toit-arriere.svg);
+  --lum: .8;
+}
+
+/* Hôtel : façades à balcons, côtés, toit-terrasse avec son emblème. */
+.vue-3d .hotel .pan.avant { background-image: url(../../assets/batiments/hotel-facade.svg); }
+.vue-3d .hotel .pan.arriere { background-image: url(../../assets/batiments/hotel-arriere.svg); }
+.vue-3d .hotel .pan.gauche, .vue-3d .hotel .pan.droite { background-image: url(../../assets/batiments/hotel-cote.svg); }
 .vue-3d .pan.dessus {
   width: var(--l); height: var(--p);
-  display: grid; place-items: center;
   transform: translateZ(var(--h));
-  color: #fff; font-weight: 800; line-height: 1;
-  --lum: 1.15;
+  background-image: url(../../assets/batiments/hotel-toit.svg);
+  --lum: 1.04;
 }
 
 /* ------------------------------------------------------------------------- */
-/* Décor : la mer, la côte et quelques silhouettes marseillaises               */
+/* Horizon : le ciel et la Corniche                                           */
 /* ------------------------------------------------------------------------- */
 
-.vue-3d .decor {
-  position: absolute;
-  inset: -40% -28% -16% -28%;
+.vue-3d .horizon {
+  --ciel-haut: #79c2ec;
+  --ciel-bas: #e3f2f9;
+  display: block; position: absolute; left: 0; right: 0; top: 0;
+  /* --horizon-y et --panorama-x sont calculés par la caméra (camera3d.js). */
+  height: max(0px, var(--horizon-y, 20cqi));
+  overflow: hidden;
   pointer-events: none;
-}
-.decor .sol {
-  position: absolute; inset: 0;
   background:
-    repeating-radial-gradient(ellipse 14% 6% at 30% 70%, rgba(255, 255, 255, .0) 0 40%, rgba(255, 255, 255, .22) 44% 47%, rgba(255, 255, 255, 0) 51% 100%),
-    radial-gradient(ellipse at 50% 60%, #2a9bd0 0%, #1a7cb3 45%, #0d5a8c 100%);
-  border-radius: 6%;
-  animation: houle 9s linear infinite;
+    url(../../assets/decor/corniche.svg) var(--panorama-x, 0px) 100% / auto 20cqi repeat-x,
+    /* Sous le bord de l'image, la mer : pas de liseré de ciel à l'horizon. */
+    linear-gradient(0deg, #1b5f92 0 3px, transparent 3px),
+    linear-gradient(180deg, var(--ciel-haut), var(--ciel-bas));
 }
-@keyframes houle { to { background-position: 14% 6%, 0 0; } }
-.decor .cote {
-  position: absolute; left: 0; right: 0; top: 0; height: 22%;
+.horizon .nuages {
+  position: absolute; left: -30%; top: 6%; width: 160%; height: 40%;
   background:
-    radial-gradient(ellipse 30% 60% at 20% 100%, #d8c79a 0 60%, transparent 61%),
-    radial-gradient(ellipse 34% 70% at 70% 100%, #d8c79a 0 60%, transparent 61%),
-    linear-gradient(180deg, #7ea25a 0%, #a7b876 55%, #e6d7ac 100%);
-  border-radius: 6% 6% 40% 40% / 6% 6% 30% 30%;
+    radial-gradient(ellipse 7% 22% at 12% 50%, rgba(255, 255, 255, .85), transparent 70%),
+    radial-gradient(ellipse 5% 16% at 16% 42%, rgba(255, 255, 255, .8), transparent 70%),
+    radial-gradient(ellipse 9% 20% at 48% 64%, rgba(255, 255, 255, .7), transparent 70%),
+    radial-gradient(ellipse 6% 14% at 52% 55%, rgba(255, 255, 255, .75), transparent 70%),
+    radial-gradient(ellipse 8% 18% at 83% 40%, rgba(255, 255, 255, .8), transparent 70%);
+  animation: nuages 140s linear infinite alternate;
 }
+@keyframes nuages { to { transform: translateX(18%); } }
+.mouettes { position: absolute; inset: 0; }
+.mouette { position: absolute; left: 0; width: 2.6cqi; animation: vol 38s linear infinite; }
+.mouette svg { display: block; width: 100%; animation: battement 1.1s ease-in-out infinite alternate; transform-origin: 50% 60%; }
+.mouette-1 { bottom: calc(20cqi * .8); animation-delay: -6s; }
+.mouette-2 { bottom: calc(20cqi * .95); width: 2cqi; animation-duration: 52s; animation-delay: -30s; }
+.mouette-3 { bottom: calc(20cqi * .7); width: 1.6cqi; animation-duration: 45s; animation-delay: -18s; }
+@keyframes vol {
+  from { transform: translate(-6cqi, 0); }
+  50% { transform: translate(50cqi, -1.5cqi); }
+  to { transform: translate(106cqi, .5cqi); }
+}
+@keyframes battement { to { transform: scaleY(.55); } }
+
+/* ------------------------------------------------------------------------- */
+/* La mer autour du plateau                                                   */
+/* ------------------------------------------------------------------------- */
+
+.decor { position: absolute; inset: 0; }
+/* Disque de mer de rayon 0,8 largeur (ECRAN.rayonMer) : turquoise près du plateau, bleu profond
+   au large, fondu sur ses bords dans la mer du conteneur. L'eau n'a pas besoin d'être fine :
+   elle est dessinée à demi-taille puis agrandie, ce qui divise par quatre sa mémoire graphique
+   (les tailles en cqi ci-dessous apparaissent donc doublées). */
+.mer {
+  position: absolute; left: 10%; top: 10%; width: 80%; height: 80%;
+  transform: scale(2);
+  border-radius: 50%;
+  overflow: hidden;
+  background: radial-gradient(circle closest-side, #39acd8 0%, #2c95c9 38%, #2279b2 58%, #1c6497 78%, #1b5f92 100%);
+}
+/* Au large, les vagues s'estompent dans la mer unie du conteneur. */
+.mer::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle closest-side, rgba(27, 95, 146, 0) 62%, #1b5f92 94%);
+}
+/* Deux trains de vagues qui dérivent lentement dans des directions différentes,
+   et des reflets de soleil qui scintillent. */
+.vagues, .reflets { position: absolute; inset: -14cqi; background-repeat: repeat; will-change: transform; }
+.vagues-larges { background-image: url(../../assets/decor/vagues.svg); background-size: 13cqi 13cqi; opacity: .75; animation: derive-larges 34s linear infinite; }
+.vagues-fines { background-image: url(../../assets/decor/vagues.svg); background-size: 7.5cqi 7.5cqi; opacity: .5; animation: derive-fines 21s linear infinite; }
+.reflets { background-image: url(../../assets/decor/reflets.svg); background-size: 11cqi 11cqi; animation: derive-reflets 50s linear infinite, scintille 2.6s ease-in-out infinite alternate; }
+@keyframes derive-larges { to { transform: translate3d(13cqi, 0, 0); } }
+@keyframes derive-fines { to { transform: translate3d(-7.5cqi, 7.5cqi, 0); } }
+@keyframes derive-reflets { to { transform: translate3d(11cqi, 11cqi, 0); } }
+@keyframes scintille { from { opacity: .2; } to { opacity: .75; } }
+
+/* Ombre du plateau sur l'eau et écume qui bat contre ses bords. */
+.ombre-plateau { position: absolute; inset: 0; border-radius: 1%; box-shadow: 1.6cqi 2.4cqi 2.8cqi rgba(4, 28, 52, .45); transform: translateZ(.05px); }
+.ecume {
+  position: absolute; inset: -.5%; border-radius: 1.4%;
+  box-shadow: 0 0 0 .45cqi rgba(255, 255, 255, .55), 0 0 1.8cqi 1cqi rgba(255, 255, 255, .32);
+  transform: translateZ(.1px);
+  animation: ecume 3.8s ease-in-out infinite;
+}
+@keyframes ecume { 50% { transform: translateZ(.1px) scale(1.012); opacity: .65; } }
+
+/* Bateaux posés sur l'eau (base au point indiqué), debout face à la caméra. */
 .decor .accessoire {
   position: absolute;
   transform-origin: 50% 100%;
-  --debout: rotateX(calc(-1 * var(--incl)));
-  transform: var(--debout);
+  transform: translate(-50%, -100%) var(--face-camera, rotateX(-54deg));
 }
+.accessoire .flotteur { transform-origin: 50% 85%; animation: tangage 4.2s ease-in-out infinite; }
 .accessoire svg { display: block; width: 100%; height: auto; }
-.decor .bonne-mere { left: 7%; bottom: 79%; width: 14%; }
-.decor .immeubles { left: 36%; bottom: 79.5%; width: 28%; }
-.decor .pins-1 { left: 25%; bottom: 80%; width: 9%; }
-.decor .pins-2 { left: 66%; bottom: 79%; width: 11%; }
-.decor .phare { left: 86%; bottom: 80%; width: 4.5%; }
-.decor .soleil-decor { left: 78%; bottom: 96%; width: 10%; }
-.decor .calanque-g { left: 1.5%; bottom: 44%; width: 15%; }
-.decor .calanque-d { left: 84%; bottom: 56%; width: 15%; transform: var(--debout) scaleX(-1); }
-.decor .bateau { animation: tangage 4s ease-in-out infinite; }
-.decor .bateau-1 { left: 4%; bottom: 20%; width: 10%; }
-.decor .bateau-2 { left: 86%; bottom: 33%; width: 9%; animation-delay: -1.5s; }
-.decor .bateau-3 { left: 87%; bottom: 10%; width: 8%; animation-delay: -2.7s; }
+.decor .bateau-1 { left: -16%; top: 62%; width: 9%; }
+.decor .bateau-2 { left: 116%; top: 34%; width: 8%; }
+.decor .bateau-2 .flotteur { animation-delay: -1.5s; animation-duration: 5s; }
+.decor .bateau-3 { left: 66%; top: -14%; width: 7%; }
+.decor .bateau-3 .flotteur { animation-delay: -2.7s; }
+.decor .bateau-4 { left: 30%; top: 118%; width: 7.5%; }
+.decor .bateau-4 .flotteur { animation-delay: -.8s; animation-duration: 4.6s; }
 @keyframes tangage {
-  0%, 100% { transform: var(--debout) translateY(0) rotate(-3deg); }
-  50% { transform: var(--debout) translateY(-.6cqi) rotate(3deg); }
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6%) rotate(3deg); }
 }
+
+/* ------------------------------------------------------------------------- */
+/* Commandes de la caméra et aide                                             */
+/* ------------------------------------------------------------------------- */
+
+.vue-3d .commandes-3d {
+  display: flex; gap: .3rem;
+  position: absolute; right: .6rem; top: .6rem; z-index: 6;
+  padding: .3rem; border-radius: 999px;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: 0 2px 10px rgba(8, 40, 70, .3);
+  backdrop-filter: blur(4px);
+}
+.btn-camera {
+  display: inline-grid; place-items: center;
+  width: 34px; height: 34px; padding: 0;
+  border: 0; border-radius: 50%;
+  background: var(--mer); color: #fff;
+  font-size: 18px; font-weight: 700; line-height: 1;
+  cursor: pointer;
+}
+.btn-camera:hover { background: var(--mer-fonce); }
+.vue-3d .aide-3d {
+  display: block;
+  position: absolute; left: 50%; bottom: .8rem; z-index: 6;
+  max-width: 90%; margin: 0; padding: .4rem .9rem;
+  border-radius: 999px;
+  background: rgba(10, 30, 50, .78); color: #fff;
+  font-size: .85rem; text-align: center;
+  transform: translateX(-50%);
+  opacity: 0; pointer-events: none;
+}
+.vue-3d .aide-3d.visible { animation: aide-3d 7s ease both; }
+@keyframes aide-3d { 0%, 100% { opacity: 0; } 8%, 85% { opacity: 1; } }
 
 /* Thème Pastis : ciel doré. */
-.theme-pastis .plateau-conteneur.vue-3d { background: linear-gradient(180deg, #ffd200 0%, #ffe680 30%, #fff4bf 46%, #fffbea 100%); }
+.theme-pastis .vue-3d .horizon { --ciel-haut: #ffd200; --ciel-bas: #fff4bf; }
 
-/* Petits écrans : un peu moins incliné pour garder les cases lisibles. */
+/* Petits écrans : vue un peu plus haute, commandes plus compactes. */
 @media (max-width: 600px) {
-  .plateau-conteneur.vue-3d { --incl: 40deg; aspect-ratio: 1 / .9; }
+  .plateau-conteneur.vue-3d { aspect-ratio: 1 / .9; }
+  .vue-3d .commandes-3d { right: .4rem; top: .4rem; gap: .2rem; padding: .2rem; }
+  .btn-camera { width: 30px; height: 30px; font-size: 16px; }
+  .vue-3d .aide-3d { bottom: .5rem; font-size: .75rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scene { transition: none; }
-  .decor .sol, .decor .bateau, .vue-3d .pion-actif { animation: none; }
+  .vagues, .reflets, .ecume, .accessoire .flotteur, .horizon .nuages, .mouette, .mouette svg, .vue-3d .pion-actif { animation: none; }
 }
