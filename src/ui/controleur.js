@@ -9,6 +9,7 @@ import { el, euros, attendre, appliquerTheme } from './utilitaires.js';
 import { VuePlateau } from './plateau.js';
 import { animerDes, afficherDes } from './des.js';
 import { creerScene } from './vue3d.js';
+import { rendreTable } from './joueurs3d.js';
 import { rendrePanneaux } from './panneaux.js';
 import { ficheCase } from './fiche.js';
 import { ouvrirModale, fermerModale, modaleEstOuverte } from './modale.js';
@@ -53,7 +54,7 @@ export class Controleur {
         this.elConteneur = el('div', { class: 'plateau-conteneur' },
           // Bulle « Untel boit 2 gorgées » du mode Pastis, fermée par le bouton « Santé ! ».
           this.elBoisson = el('div', { class: 'bulle-boisson', role: 'alertdialog', 'aria-labelledby': 'texte-boisson', hidden: true })),
-        el('aside', { class: 'barre-laterale' },
+        this.elBarre = el('aside', { class: 'barre-laterale' },
           el('section', { class: 'commandes', 'aria-label': 'Actions du tour' },
             this.elConnexion = el('p', { class: 'alerte bandeau-connexion', role: 'status', hidden: true }),
             this.reseau ? el('p', { class: 'info-salon' }, `Partie en ligne — salon ${this.salon.code}`) : null,
@@ -63,9 +64,12 @@ export class Controleur {
       this.elNotif = el('div', { class: 'notification', role: 'status', 'aria-live': 'polite' }),
       // Annonce des événements du journal pour les lecteurs d'écran.
       this.elAnnonce = el('div', { class: 'visuellement-cache', 'aria-live': 'polite' }));
-    // Scène (vue à plat ou en 3D avec son décor) qui accueille le plateau.
-    const { plateau, bouton } = creerScene(this.elConteneur);
+    // Scène (vue à plat ou en 3D avec son décor et ses joueurs) qui accueille le plateau.
+    const { plateau, bouton, table, etiquettes, camera3d } = creerScene(this.elConteneur, { panneau: this.elBarre });
     this.elPlateau = plateau;
+    this.scene3d = { table, etiquettes, camera3d };
+    // En entrant en vue 3D, les joueurs s'installent autour du plateau.
+    camera3d.surBascule = (actif) => { if (actif && this.vue) this.rafraichir(); };
     this.elTour.after(bouton);
   }
 
@@ -79,12 +83,19 @@ export class Controleur {
     this.vue.majPions(etat, this.positions);
     this.vue.majCagnotte(etat);
     this.vue.majJournal(etat.journal);
-    rendrePanneaux(this.elPanneaux, this.partie, {
+    const options = {
       surClicCase: (i) => this.montrerFiche(i),
       moi: this.moi,
       salon: this.salon,
       surRemplacer: (id) => this.remplacerParIA(id)
-    });
+    };
+    rendrePanneaux(this.elPanneaux, this.partie, options);
+    // En vue 3D, les mêmes informations sont autour du plateau : jetons, cartes, verres, étiquettes.
+    const { table, etiquettes, camera3d } = this.scene3d;
+    if (camera3d.actif) {
+      rendreTable(table, etiquettes, this.partie, { ...options, surClicJoueur: (angle) => camera3d.tournerVers(angle) });
+      camera3d.rendre();
+    }
     this.rendreActions();
   }
 

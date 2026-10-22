@@ -44,12 +44,12 @@ describe('gestes', () => {
 
   test('déplacer fait glisser le plateau sans le tourner', () => {
     const c = deplacer(CAMERA_DEFAUT, 0.1, -0.05);
-    assert.deepEqual([c.decalageX, c.decalageY, c.azimut, c.zoom], [0.1, -0.05, 0, 1]);
+    assert.deepEqual([c.decalageX, c.decalageY, c.azimut, c.zoom], [0.1, -0.05, 0, CAMERA_DEFAUT.zoom]);
   });
 
   test('zoomer sur le centre du plateau ne le déplace pas', () => {
     const c = zoomer(CAMERA_DEFAUT, 1.5);
-    assert.equal(c.zoom, 1.5);
+    assert.ok(Math.abs(c.zoom - CAMERA_DEFAUT.zoom * 1.5) < 1e-12);
     assert.deepEqual([c.decalageX, c.decalageY], [0, 0]);
   });
 

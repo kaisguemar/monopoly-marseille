@@ -513,6 +513,93 @@ function reflets() {
 }
 
 // ---------------------------------------------------------------------------
+// Ponton de bois sur lequel est posé le plateau, et feutre des tapis des joueurs
+// ---------------------------------------------------------------------------
+
+// Ponton rond vu du dessus : planches clouées sur des lambourdes, rebord, bittes d'amarrage et cordage.
+function ponton() {
+  const rng = hasard(51);
+  const T = 1000;
+  const C = T / 2;
+  const BOIS = ['#b8895a', '#c29467', '#ad7e50', '#bb8d5f', '#a87a4e', '#c79c6e', '#b48456'];
+  const LAMBOURDES = [140, 320, 500, 680, 860];
+  let planches = '';
+  const nombre = 19;
+  const hauteur = T / nombre;
+  for (let k = 0; k < nombre; k++) {
+    const y = k * hauteur;
+    // Chaque rangée est faite d'une ou deux planches, aboutées sur une lambourde.
+    const joint = rng.suivant() < 0.6 ? rng.choix(LAMBOURDES.slice(1, -1)) : null;
+    const morceaux = joint ? [[0, joint], [joint, T]] : [[0, T]];
+    for (const [x0, x1] of morceaux) {
+      planches += rect(x0, y, x1 - x0, hauteur - 3, `fill="${rng.choix(BOIS)}"`);
+      for (let v = 0; v < 5; v++) {
+        const yy = y + rng.entre(5, hauteur - 8);
+        const ondule = rng.entre(-3, 3);
+        planches += chemin(`M${f(x0 + 4)} ${f(yy)}Q${f((x0 + x1) / 2)} ${f(yy + ondule)} ${f(x1 - 4)} ${f(yy + rng.entre(-2, 2))}`,
+          `fill="none" stroke="#5a3a1c" stroke-opacity="${o(rng.entre(0.12, 0.28))}" stroke-width="${f(rng.entre(0.8, 2))}"`);
+      }
+      if (rng.suivant() < 0.35) {
+        const nx = rng.entre(x0 + 30, x1 - 30);
+        planches += `<ellipse cx="${f(nx)}" cy="${f(y + hauteur / 2)}" rx="${f(rng.entre(7, 13))}" ry="${f(rng.entre(3, 6))}" fill="#6b4626" fill-opacity=".55"/>`;
+      }
+      if (joint) planches += rect(joint - 1.5, y, 3, hauteur - 3, 'fill="#3a2614"');
+    }
+    for (const x of LAMBOURDES) {
+      for (const dy of [hauteur * 0.28, hauteur * 0.66]) planches += cercle(x + (x === joint ? 6 : 0), y + dy, 2.6, 'fill="#3b3b3b"') + cercle(x - 0.8, y + dy - 0.8, 1, 'fill="#9a9a9a"');
+    }
+  }
+  let dessin = cercle(C, C, C, 'fill="#3a2614"')
+    + `<g clip-path="url(#disque)">${planches}</g>`
+    + cercle(C, C, 486, 'fill="url(#volume)"')
+    // Rebord en planches cintrées.
+    + cercle(C, C, 491, 'fill="none" stroke="#7a5230" stroke-width="18"')
+    + cercle(C, C, 499, 'fill="none" stroke="#4a301a" stroke-width="3"')
+    + cercle(C, C, 482, 'fill="none" stroke="#2e1d0e" stroke-opacity=".5" stroke-width="2"');
+  for (let a = 0; a < 360; a += 15) {
+    const r = (a * Math.PI) / 180;
+    dessin += cercle(C + 491 * Math.cos(r), C + 491 * Math.sin(r), 2.4, 'fill="#3b3b3b"');
+  }
+  // Bittes d'amarrage en fonte et un rouleau de cordage.
+  for (const a of [45, 135, 225, 315]) {
+    const r = (a * Math.PI) / 180;
+    const x = C + 462 * Math.cos(r);
+    const y = C + 462 * Math.sin(r);
+    dessin += cercle(x + 4, y + 5, 15, 'fill="#000" fill-opacity=".3"') + cercle(x, y, 14, 'fill="#2f3337"') + cercle(x - 4, y - 4, 5, 'fill="#5b636b"');
+  }
+  let spirale = '';
+  for (let t = 0; t < 4 * Math.PI; t += 0.25) spirale += `${t ? 'L' : 'M'}${f(C + 300 + Math.cos(t) * (6 + t * 3.4))} ${f(C - 300 + Math.sin(t) * (6 + t * 3.4))}`;
+  dessin += chemin(spirale, 'fill="none" stroke="#d9c7a0" stroke-width="7" stroke-linecap="round"')
+    + chemin(spirale, 'fill="none" stroke="#a88d5c" stroke-width="2" stroke-dasharray="3 5"');
+  const defs = `<clipPath id="disque"><circle cx="${C}" cy="${C}" r="486"/></clipPath>`
+    + '<radialGradient id="volume"><stop offset=".7" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></radialGradient>';
+  return svg(T, T, dessin, defs, 'xMidYMid meet');
+}
+
+// Grain du feutre des tapis, en motif raccordable (la couleur du joueur est posée dessous).
+function feutre() {
+  const rng = hasard(52);
+  const taille = 48;
+  let s = '';
+  for (let i = 0; i < 70; i++) {
+    const x = rng.entre(0, taille);
+    const y = rng.entre(0, taille);
+    const clair = rng.suivant() < 0.5;
+    const attributs = `fill="${clair ? '#fff' : '#000'}" fill-opacity="${o(rng.entre(0.05, 0.12))}"`;
+    const r = rng.entre(0.3, 0.9);
+    s += raccorder(x, y, 2, taille, taille, (xx, yy) => cercle(xx, yy, r, attributs));
+  }
+  for (let i = 0; i < 26; i++) {
+    const x = rng.entre(0, taille);
+    const y = rng.entre(0, taille);
+    const a = rng.entre(0, Math.PI);
+    const attributs = `stroke="#000" stroke-opacity="${o(rng.entre(0.05, 0.1))}" stroke-width=".5"`;
+    s += raccorder(x, y, 4, taille, taille, (xx, yy) => chemin(`M${f(xx)} ${f(yy)}l${f(Math.cos(a) * 3)} ${f(Math.sin(a) * 3)}`, attributs));
+  }
+  return svg(taille, taille, s, '', 'xMidYMid meet');
+}
+
+// ---------------------------------------------------------------------------
 // Panorama de la Corniche (raccordable à gauche et à droite : il fait le tour de l'horizon)
 // ---------------------------------------------------------------------------
 
@@ -751,7 +838,9 @@ export function genererImages() {
     'assets/batiments/hotel-icone.svg': hotelIcone(),
     'assets/decor/vagues.svg': vagues(),
     'assets/decor/reflets.svg': reflets(),
-    'assets/decor/corniche.svg': panoramaCorniche()
+    'assets/decor/corniche.svg': panoramaCorniche(),
+    'assets/decor/ponton.svg': ponton(),
+    'assets/decor/feutre.svg': feutre()
   };
 }
 

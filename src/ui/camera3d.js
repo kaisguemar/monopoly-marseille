@@ -1,31 +1,34 @@
 // Caméra de la vue 3D : orientation du plateau (azimut), inclinaison, zoom et décalage.
 // Module pur, sans DOM : ses calculs sont testés avec Node (tests/camera3d.test.js).
 //
-// Les distances sont exprimées en largeurs de vue. Les constantes d'ÉCRAN reprennent celles
-// de src/styles/vue3d.css (perspective, position et taille du plateau) : les garder accordées.
+// Les distances sont exprimées en largeurs de « scène » : le cadre de référence de la caméra,
+// de proportions fixes, centré dans l'espace libre de l'écran (le décor déborde tout autour).
+// Les constantes d'ÉCRAN reprennent celles de src/styles/vue3d.css : les garder accordées.
 
 export const ECRAN = Object.freeze({
-  perspective: 2.4,            // distance de la caméra (perspective: 240cqi)
-  origineY: 0.2,               // point de fuite à 20 % de la hauteur de la vue
+  hauteurVue: 0.84,            // hauteur de la scène / largeur
+  perspective: 2.4,            // distance de la caméra (perspective : 2,4 largeurs de scène)
+  origineY: 0.2,               // point de fuite à 20 % de la hauteur de la scène
   echelle: 0.74,               // taille du plateau au zoom 1
-  decalageY: 0.02,             // position verticale du plateau
-  rayonMer: 0.8,               // rayon du disque de mer autour du centre du plateau
-  panorama: 0.2,               // hauteur du panorama de la Corniche
+  decalageY: 0,                // position verticale du plateau
+  rayonMer: 1.7,               // rayon du disque de mer autour du centre du plateau (en plateaux)
+  panorama: 0.18,              // hauteur du panorama de la Corniche
   rapportPanorama: 3600 / 220, // largeur / hauteur de l'image du panorama (un tour complet)
   recouvrement: 0.13           // part basse du panorama (la mer) recouverte par la mer du plateau
 });
 
-export const LIMITES = Object.freeze({ inclinaison: [15, 72], zoom: [0.6, 2.6], decalage: 0.55 });
+export const LIMITES = Object.freeze({ inclinaison: [15, 72], zoom: [0.4, 2.6], decalage: 0.55 });
 
-export const CAMERA_DEFAUT = Object.freeze({ azimut: 0, inclinaison: 54, zoom: 1, decalageX: 0, decalageY: 0 });
+// Vue de départ : toute la table et ses joueurs, la Corniche derrière.
+export const CAMERA_DEFAUT = Object.freeze({ azimut: 0, inclinaison: 60, zoom: 0.6, decalageX: 0, decalageY: 0 });
 
 const RAD = Math.PI / 180;
 const borner = (x, min, max) => Math.min(max, Math.max(min, x));
 const nombre = (x, defaut) => (typeof x === 'number' && Number.isFinite(x) ? x : defaut);
 
-// Caméra de départ : un peu moins inclinée sur les petits écrans, pour garder les cases lisibles.
+// Caméra de départ : un peu moins inclinée et un peu plus loin sur les petits écrans.
 export function cameraParDefaut(largeurEcran = 1000) {
-  return { ...CAMERA_DEFAUT, inclinaison: largeurEcran < 600 ? 50 : CAMERA_DEFAUT.inclinaison };
+  return largeurEcran < 600 ? { ...CAMERA_DEFAUT, inclinaison: 56, zoom: 0.48 } : { ...CAMERA_DEFAUT };
 }
 
 // Ramène une caméra dans les limites autorisées (valeurs manquantes ou invalides : par défaut).
@@ -76,10 +79,10 @@ export function interpoler(a, b, t) {
   };
 }
 
-// Position à l'écran d'un point du plateau ({ x, y, z } depuis son centre, en largeurs de vue),
-// selon les transformations CSS de la scène : décalage, rotateX(inclinaison), rotateZ(azimut),
-// mise à l'échelle, puis perspective. `hauteurVue` : hauteur de la vue / largeur.
-export function projeter(c, { x, y, z = 0 }, hauteurVue) {
+// Position dans la scène d'un point du plateau ({ x, y, z } depuis son centre, en largeurs de
+// plateau), selon les transformations CSS : décalage, rotateX(inclinaison), rotateZ(azimut),
+// mise à l'échelle, puis perspective. `fuite` : grossissement dû à la perspective en ce point.
+export function projeter(c, { x, y, z = 0 }, hauteurVue = ECRAN.hauteurVue) {
   const k = ECRAN.echelle * c.zoom;
   const az = c.azimut * RAD;
   const inc = c.inclinaison * RAD;
@@ -91,12 +94,12 @@ export function projeter(c, { x, y, z = 0 }, hauteurVue) {
   const Z = ry * Math.sin(inc) + rz * Math.cos(inc);
   const fuite = ECRAN.perspective / (ECRAN.perspective - Z);
   const oy = ECRAN.origineY * hauteurVue;
-  return { x: 0.5 + (X - 0.5) * fuite, y: oy + (Y - oy) * fuite };
+  return { x: 0.5 + (X - 0.5) * fuite, y: oy + (Y - oy) * fuite, fuite };
 }
 
 // Horizon : le bas du panorama de la Corniche se pose sur le bord lointain de la mer, et l'image
 // défile quand le plateau tourne (un tour complet = toute la largeur du panorama).
-export function horizon(c, hauteurVue) {
+export function horizon(c, hauteurVue = ECRAN.hauteurVue) {
   const az = c.azimut * RAD;
   const r = ECRAN.rayonMer;
   const bord = projeter(c, { x: -r * Math.sin(az), y: -r * Math.cos(az) }, hauteurVue);
