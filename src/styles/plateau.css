@@ -122,15 +122,59 @@
 .pioche-chance { color: var(--terre); border-color: var(--terre); background: #fbe7dc; transform: rotate(-4deg); }
 .pioche-communaute { color: var(--mer-fonce); border-color: var(--mer); background: var(--mer-clair); transform: rotate(3deg); }
 
-.zone-des { display: flex; justify-content: center; gap: 1em; min-height: 3.6em; }
-.zone-des.roule .de { animation: roule .16s linear infinite; }
-@keyframes roule { 50% { transform: rotate(18deg) translateY(-.2em); } }
-.de {
+.zone-des { display: flex; justify-content: center; gap: 1.6em; min-height: 4.6em; padding-top: .4em; }
+
+/* Dés en 3D */
+.de3d { position: relative; display: inline-block; width: 3.4em; height: 3.4em; perspective: 14em; }
+.cube { position: absolute; inset: 0; transform-style: preserve-3d; }
+.face {
+  position: absolute; inset: 0;
   display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
-  width: 3.4em; height: 3.4em; padding: .35em; gap: .1em;
-  background: #fff; border-radius: .6em; box-shadow: inset 0 -.2em 0 #ddd, 0 2px 6px rgba(0, 0, 0, .3);
+  padding: .35em; gap: .1em;
+  background: #fff; border-radius: .55em;
+  box-shadow: inset 0 0 0 .08em #d9d2c3, inset 0 -.25em .4em rgba(0, 0, 0, .08);
+  backface-visibility: hidden;
 }
-.de .point { background: var(--mer-fonce); border-radius: 50%; margin: .08em; }
+.face .point { background: var(--mer-fonce); border-radius: 50%; margin: .08em; }
+.face-1 .point { background: var(--terre); }
+.face-1 { transform: rotateY(0deg) translateZ(1.7em); }
+.face-2 { transform: rotateY(90deg) translateZ(1.7em); }
+.face-3 { transform: rotateX(90deg) translateZ(1.7em); }
+.face-4 { transform: rotateX(-90deg) translateZ(1.7em); }
+.face-5 { transform: rotateY(-90deg) translateZ(1.7em); }
+.face-6 { transform: rotateY(180deg) translateZ(1.7em); }
+.ombre-de {
+  position: absolute; left: 10%; right: 10%; bottom: -.7em; height: .5em;
+  border-radius: 50%; background: rgba(8, 40, 64, .25); filter: blur(.12em);
+}
+
+/* Lancer : les dés partent de côté, rebondissent deux fois et se posent. */
+.zone-des.lance .de3d { animation: lancer-de var(--duree-lancer, 1100ms) ease-out both; }
+.zone-des.lance .de3d:nth-child(2) { animation-name: lancer-de-2; }
+.zone-des.lance .ombre-de { animation: ombre-de var(--duree-lancer, 1100ms) ease-out both; }
+@keyframes lancer-de {
+  0% { transform: translate(-6em, -3em) scale(.6); opacity: .2; }
+  35% { transform: translate(-2em, -2.2em) scale(1.15); opacity: 1; }
+  55% { transform: translate(-.6em, 0) scale(1); }
+  70% { transform: translate(-.2em, -.8em); }
+  85% { transform: translate(0, 0); }
+  92% { transform: translate(0, -.2em); }
+  100% { transform: none; }
+}
+@keyframes lancer-de-2 {
+  0% { transform: translate(6em, -3.4em) scale(.6); opacity: .2; }
+  35% { transform: translate(2.2em, -2.6em) scale(1.15); opacity: 1; }
+  55% { transform: translate(.6em, 0) scale(1); }
+  70% { transform: translate(.2em, -1em); }
+  85% { transform: translate(0, 0); }
+  92% { transform: translate(0, -.25em); }
+  100% { transform: none; }
+}
+@keyframes ombre-de {
+  0%, 35% { opacity: 0; transform: scale(.5); }
+  55%, 85%, 100% { opacity: 1; transform: none; }
+  70% { opacity: .5; transform: scale(.7); }
+}
 
 .cagnotte { text-align: center; font-weight: 700; color: var(--ocre-fonce); }
 

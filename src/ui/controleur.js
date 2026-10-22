@@ -152,7 +152,7 @@ export class Controleur {
     for (const ev of evenements) {
       switch (ev.type) {
         case 'des':
-          await animerDes(this.vue.zoneDes, ev.des, 650 * this.facteur);
+          await animerDes(this.vue.zoneDes, ev.des, 1100 * this.facteur);
           break;
         case 'deplacement':
           for (const pos of ev.chemin) {
