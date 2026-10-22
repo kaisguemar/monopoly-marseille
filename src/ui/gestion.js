@@ -10,7 +10,7 @@ import {
 
 // Pastille « couleur + nom du quartier » (la couleur n'est jamais seule).
 function pastille(c, plateau) {
-  if (c.type !== 'propriete') return el('span', { class: 'puce-groupe puce-neutre' }, c.type === 'gare' ? 'Gare' : 'Compagnie');
+  if (c.type !== 'propriete') return el('span', { class: 'puce-groupe puce-neutre' }, c.type === 'gare' ? 'Station' : 'Compagnie');
   const g = plateau.groupes[c.groupe];
   return el('span', { class: 'puce-groupe', style: { background: g.couleur, color: texteSur(g.couleur) } }, g.nomCourt);
 }

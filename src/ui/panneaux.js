@@ -19,7 +19,7 @@ export function rendrePanneaux(racine, partie, { surClicCase, moi = null, salon 
     }
     const listes = [...groupes.entries()].map(([cle, cases]) => {
       const g = plateau.groupes[cle];
-      const libelle = g ? g.nom : cle === 'gare' ? 'Gares' : 'Compagnies';
+      const libelle = g ? g.nom : cle === 'gare' ? 'Stations de métro' : 'Compagnies';
       const couleur = g ? g.couleur : '#5f6b73';
       return el('li', { class: 'groupe-joueur' },
         el('span', { class: 'puce-groupe', style: { background: couleur, color: texteSur(couleur) } }, libelle),

@@ -299,7 +299,7 @@ describe('cartes', () => {
   });
 
   test('aller_a : sans salaire si pas de passage', () => {
-    const p = surChance('chance-05', 36); // Fond Vert
+    const p = surChance('chance-05', 36); // Vieux-Port
     assert.equal(p.etat.joueurs[0].position, 39);
     assert.equal(p.etat.joueurs[0].argent, 1500);
   });

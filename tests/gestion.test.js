@@ -262,7 +262,7 @@ describe('échanges', () => {
 });
 
 describe('faillite', () => {
-  // J1 doit un loyer énorme sur Fond Vert de J2 (hôtel : 2 000 €).
+  // J1 doit un loyer énorme sur le Vieux-Port de J2 (hôtel : 2 000 €).
   const ruine = (n = 2) => {
     const p = creerPartie(n);
     donner(p, 37, 1, 5);

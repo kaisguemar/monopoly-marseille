@@ -18,8 +18,8 @@ export function ficheCase(c, etat, plateau) {
     ligne('Avec un hôtel', euros(c.loyers[5]));
     ligne('Prix d\'une maison / d\'un hôtel', euros(c.prixMaison));
   } else if (c.type === 'gare') {
-    entete = el('div', { class: 'fiche-entete fiche-neutre' }, el('small', {}, 'Gare'), el('strong', {}, c.nom));
-    c.loyers.forEach((l, i) => ligne(`Avec ${i + 1} gare${i ? 's' : ''}`, euros(l)));
+    entete = el('div', { class: 'fiche-entete fiche-neutre' }, el('small', {}, 'Station de métro'), el('strong', {}, c.nom));
+    c.loyers.forEach((l, i) => ligne(`Avec ${i + 1} station${i ? 's' : ''}`, euros(l)));
   } else if (c.type === 'compagnie') {
     entete = el('div', { class: 'fiche-entete fiche-neutre' }, el('small', {}, c.description ?? 'Compagnie'), el('strong', {}, c.nom));
     ligne('Avec 1 établissement', `${c.multiplicateurs[0]} × le total des dés`);

@@ -1,18 +1,18 @@
 {
   "groupes": {
     "marron": {
-      "nom": "Frais-Vallon – Malpassé",
-      "nomCourt": "Malpassé",
+      "nom": "Le Charbon",
+      "nomCourt": "Charbon",
       "couleur": "#8B5A2B"
     },
     "bleu-ciel": {
-      "nom": "Le Panier",
-      "nomCourt": "Panier",
+      "nom": "Le Charbon",
+      "nomCourt": "Charbon",
       "couleur": "#7FC8E8"
     },
     "violet": {
-      "nom": "La Plaine – Cours Julien",
-      "nomCourt": "La Plaine",
+      "nom": "Le Troubadour – Cours Julien",
+      "nomCourt": "Troubadour",
       "couleur": "#C2459A"
     },
     "orange": {
@@ -36,8 +36,8 @@
       "couleur": "#2E9B4F"
     },
     "bleu-fonce": {
-      "nom": "La Castellane – Fond Vert",
-      "nomCourt": "Fond Vert",
+      "nom": "Bord de mer",
+      "nomCourt": "Bord de mer",
       "couleur": "#1D4E9E"
     }
   },
@@ -95,7 +95,7 @@
     {
       "index": 5,
       "type": "gare",
-      "nom": "Gare Saint-Charles",
+      "nom": "Station Saint-Charles",
       "prix": 200,
       "loyers": [
         25,
@@ -108,7 +108,7 @@
     {
       "index": 6,
       "type": "propriete",
-      "nom": "Place de Lenche",
+      "nom": "La Castellane",
       "groupe": "bleu-ciel",
       "prix": 100,
       "loyers": [
@@ -130,7 +130,7 @@
     {
       "index": 8,
       "type": "propriete",
-      "nom": "Montée des Accoules",
+      "nom": "Fond Vert",
       "groupe": "bleu-ciel",
       "prix": 100,
       "loyers": [
@@ -147,7 +147,7 @@
     {
       "index": 9,
       "type": "propriete",
-      "nom": "Rue du Panier",
+      "nom": "Château Saint-Loup",
       "groupe": "bleu-ciel",
       "prix": 120,
       "loyers": [
@@ -232,7 +232,7 @@
     {
       "index": 15,
       "type": "gare",
-      "nom": "Gare de la Blancarde",
+      "nom": "Station Dromel",
       "prix": 200,
       "loyers": [
         25,
@@ -517,7 +517,7 @@
     {
       "index": 37,
       "type": "propriete",
-      "nom": "La Castellane",
+      "nom": "Corniche Kennedy",
       "groupe": "bleu-fonce",
       "prix": 350,
       "loyers": [
@@ -540,7 +540,7 @@
     {
       "index": 39,
       "type": "propriete",
-      "nom": "Fond Vert",
+      "nom": "Vieux-Port",
       "groupe": "bleu-fonce",
       "prix": 400,
       "loyers": [

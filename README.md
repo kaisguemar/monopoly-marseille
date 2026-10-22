@@ -1,6 +1,6 @@
 # Monopoly Marseille
 
-Version marseillaise du Monopoly, jouable entièrement dans le navigateur, en français. De 2 à 6 joueurs, sur le même écran ou chacun chez soi en ligne, humains ou ordinateurs. De Frais-Vallon à Fond Vert, en passant par le Panier, la Canebière et le Prado : achetez Marseille quartier par quartier !
+Version marseillaise du Monopoly, jouable entièrement dans le navigateur, en français. De 2 à 6 joueurs, sur le même écran ou chacun chez soi en ligne, humains ou ordinateurs. De Frais-Vallon au Vieux-Port, en passant par le Cours Julien, la Canebière et la Corniche Kennedy : achetez Marseille quartier par quartier !
 
 - Règles du Monopoly français (constructions uniformes, hypothèques, échanges, faillite), sans enchère quand on refuse d'acheter.
 - 40 cases marseillaises et 32 cartes réécrites avec le mistral, l'OM, la Bonne Mère, les calanques…
@@ -55,16 +55,16 @@ Les règles complètes sont dans [`docs/REGLES.md`](docs/REGLES.md).
 
 | Quartier (couleur) | Propriétés | Prix |
 | --- | --- | --- |
-| Frais-Vallon – Malpassé (marron) | Frais-Vallon, Malpassé | 60 € |
-| Le Panier (bleu ciel) | Place de Lenche, Montée des Accoules, Rue du Panier | 100–120 € |
-| La Plaine – Cours Julien (violet) | Notre-Dame-du-Mont, Cours Julien, La Plaine | 140–160 € |
+| Le Charbon (marron) | Frais-Vallon, Malpassé | 60 € |
+| Le Charbon (bleu ciel) | La Castellane, Fond Vert, Château Saint-Loup | 100–120 € |
+| Le Troubadour – Cours Julien (violet) | Notre-Dame-du-Mont, Cours Julien, La Plaine | 140–160 € |
 | Centre-ville (orange) | Rue de Rome, Rue Saint-Ferréol, La Canebière | 180–200 € |
 | Endoume (rouge) | Rue d'Endoume, Vallon des Auffes, Malmousque | 220–240 € |
 | Prado – Castellane (jaune) | Place Castellane, Avenue du Prado, Parc Borély | 260–280 € |
 | Roucas-Blanc – Périer (vert) | Boulevard Périer, Chemin du Roucas-Blanc, Rue Paradis | 300–320 € |
-| La Castellane – Fond Vert (bleu foncé) | La Castellane, Fond Vert | 350–400 € |
+| Bord de mer (bleu foncé) | Corniche Kennedy, Vieux-Port | 350–400 € |
 
-- **Gares** : Gare Saint-Charles, Gare de la Blancarde, Station Joliette, Station Rond-Point du Prado.
+- **Stations de métro** : Station Saint-Charles, Station Dromel, Station Joliette, Station Rond-Point du Prado.
 - **Compagnies** : le bar Le Viaghji (à la place de la compagnie d'électricité) et le restaurant Chez Jeannot (à la place de la compagnie des eaux).
 - **Taxes** : Station Total (200 €, à la place des impôts sur le revenu), Tunnel Prado-Carénage (100 €, à la place de la taxe de luxe).
 - **Coins** : Départ, Les Baumettes / Simple visite, Trottoir gratuit du Jarret (le Parc gratuit), Allez aux Baumettes.
@@ -77,14 +77,14 @@ Le cahier des charges laisse quelques points ouverts. Voici les choix retenus, l
 
 **Structure et contenu**
 - `index.html` a été déplacé de `src/` vers la racine, comme le demande la structure attendue du cahier des charges.
-- La prison est **Les Baumettes** et le Parc gratuit le **Trottoir gratuit du Jarret**. Les quartiers regroupent des lieux voisins ; à la demande des joueurs, le premier groupe (Frais-Vallon, Malpassé) et le plus cher (La Castellane, Fond Vert) sont des cités des quartiers Nord : les prix restent ceux du plateau classique, même si ce choix s'écarte de la progression « quartiers populaires → lieux prestigieux » du cahier des charges.
-- Les cartes qui envoient vers une case précise sont transposées case pour case : Avenue Henri-Martin → Malmousque, Boulevard de la Villette → Notre-Dame-du-Mont, Gare de Lyon → Gare de la Blancarde, Rue de la Paix → Fond Vert, Boulevard de Belleville → Frais-Vallon.
+- La prison est **Les Baumettes** et le Parc gratuit le **Trottoir gratuit du Jarret**. Les quartiers regroupent des lieux voisins ; les deux premiers groupes, « Le Charbon » (Frais-Vallon, Malpassé, puis La Castellane, Fond Vert, Château Saint-Loup), sont des quartiers Nord et Est, et le plateau monte jusqu'au bord de mer. Les deux groupes portent le même nom de quartier, à la demande des joueurs ; leurs couleurs les distinguent. La case « La Castellane » (bleu ciel, cité des quartiers Nord) ne doit pas être confondue avec la « Place Castellane » (jaune).
+- Les cartes qui envoient vers une case précise sont transposées case pour case : Avenue Henri-Martin → Malmousque, Boulevard de la Villette → Notre-Dame-du-Mont, Gare de Lyon → Station Dromel, Rue de la Paix → Vieux-Port, Boulevard de Belleville → Frais-Vallon.
 - Le logo « Monopoly Marseille » est dessiné avec des polices système (aucun logo, mascotte ni typographie de la marque).
 
 **Règles de jeu**
 - **Pas d'enchère au refus d'achat** (choix de la maison) : une propriété qu'un joueur refuse d'acheter reste à la banque, et le prochain joueur qui s'y arrête peut l'acheter.
 - **Enchères** : elles n'ont lieu que pour les propriétés reprises par la banque après une faillite. Elles commencent par le joueur dont c'est le tour, puis suivent l'ordre de jeu. Chaque offre doit dépasser la précédente d'au moins 1 € sans dépasser l'argent du joueur ; qui passe est éliminé. Si personne n'enchérit, la propriété reste à la banque. On ne peut pas hypothéquer ni construire pendant une enchère.
-- **Levée d'hypothèque** : valeur hypothécaire + 10 %, arrondie à l'euro supérieur (par exemple 193 € pour La Castellane).
+- **Levée d'hypothèque** : valeur hypothécaire + 10 %, arrondie à l'euro supérieur (par exemple 193 € pour la Corniche Kennedy).
 - **Loyer doublé** : un terrain nu rapporte double dès que le quartier entier appartient au même joueur, même si un autre terrain du quartier est hypothéqué (règle officielle).
 - **Compagnies** : le loyer se calcule sur le total du lancer en cours, y compris quand on y arrive par une carte.
 - **Pénurie de maisons** : revendre un hôtel le remplace par 4 maisons. Si la banque n'a pas 4 maisons en stock, l'hôtel est revendu avec ses 4 maisons (soit 5 × la moitié du prix d'une maison) et le terrain redevient nu. Cela évite qu'un joueur endetté se retrouve bloqué.
@@ -200,7 +200,7 @@ Actions disponibles : `lancer`, `acheter`, `refuserAchat`, `encherir`, `passerEn
 
 Évolutions :
 
-- [x] Renommages marseillais : Les Baumettes, Trottoir gratuit du Jarret, Station Total, Tunnel Prado-Carénage, Le Viaghji, Chez Jeannot, La Plaine
+- [x] Renommages marseillais : Les Baumettes, Trottoir gratuit du Jarret, Station Total, Tunnel Prado-Carénage, Le Viaghji, Chez Jeannot, La Plaine, Le Charbon, Le Troubadour, Château Saint-Loup, Station Dromel
 - [x] Pas d'enchère quand on refuse d'acheter
 - [x] Animation 3D du lancer de dés
 - [x] Multijoueur en ligne avec reconnexion
