@@ -89,7 +89,7 @@
     {
       "index": 4,
       "type": "taxe",
-      "nom": "Impôt sur la sardine",
+      "nom": "Station Total",
       "montant": 200
     },
     {
@@ -164,7 +164,7 @@
     {
       "index": 10,
       "type": "prison",
-      "nom": "Château d'If / Simple visite"
+      "nom": "Les Baumettes / Simple visite"
     },
     {
       "index": 11,
@@ -186,13 +186,14 @@
     {
       "index": 12,
       "type": "compagnie",
-      "nom": "Compagnie Électrique du Mistral",
+      "nom": "Le Viaghji",
       "prix": 150,
       "multiplicateurs": [
         4,
         10
       ],
-      "hypotheque": 75
+      "hypotheque": 75,
+      "description": "Bar"
     },
     {
       "index": 13,
@@ -214,7 +215,7 @@
     {
       "index": 14,
       "type": "propriete",
-      "nom": "Place Jean-Jaurès",
+      "nom": "La Plaine",
       "groupe": "violet",
       "prix": 160,
       "loyers": [
@@ -300,7 +301,7 @@
     {
       "index": 20,
       "type": "parc",
-      "nom": "Parc gratuit – Plage des Catalans"
+      "nom": "Trottoir gratuit du Jarret"
     },
     {
       "index": 21,
@@ -408,13 +409,14 @@
     {
       "index": 28,
       "type": "compagnie",
-      "nom": "Société des Eaux de Marseille",
+      "nom": "Chez Jeannot",
       "prix": 150,
       "multiplicateurs": [
         4,
         10
       ],
-      "hypotheque": 75
+      "hypotheque": 75,
+      "description": "Restaurant"
     },
     {
       "index": 29,
@@ -436,7 +438,7 @@
     {
       "index": 30,
       "type": "allez_prison",
-      "nom": "Allez au Château d'If"
+      "nom": "Allez aux Baumettes"
     },
     {
       "index": 31,
@@ -532,7 +534,7 @@
     {
       "index": 38,
       "type": "taxe",
-      "nom": "Taxe bouillabaisse",
+      "nom": "Tunnel Prado-Carénage",
       "montant": 100
     },
     {

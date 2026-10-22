@@ -4,9 +4,11 @@ import { svgPion, COULEURS_JOUEURS } from './pions.js';
 import { HOTEL } from '../moteur/regles.js';
 
 const ICONES = {
-  depart: '⟵', chance: '?', communaute: '⚓', taxe: '💶', gare: '🚆', prison: '🏰',
-  parc: '🏖️', allez_prison: '⛵', eau: '💧', electricite: '⚡'
+  depart: '⟵', chance: '?', communaute: '⚓', gare: '🚆', prison: '🔒',
+  parc: '🚗', allez_prison: '🚓', restaurant: '🍕', bar: '🍹'
 };
+// Icônes propres à certaines taxes.
+const ICONES_TAXES = { 4: '⛽', 38: '🚇' };
 
 // Position (ligne, colonne) dans la grille 11 × 11 et côté du plateau.
 function placement(index) {
@@ -17,7 +19,8 @@ function placement(index) {
 }
 
 function icone(c) {
-  if (c.type === 'compagnie') return c.nom.includes('Eaux') ? ICONES.eau : ICONES.electricite;
+  if (c.type === 'compagnie') return c.description === 'Restaurant' ? ICONES.restaurant : ICONES.bar;
+  if (c.type === 'taxe') return ICONES_TAXES[c.index] ?? '💶';
   return ICONES[c.type] ?? '';
 }
 
@@ -53,7 +56,7 @@ export class VuePlateau {
       }
       const contenu = el('span', { class: 'contenu' });
       if (c.type !== 'propriete') contenu.append(el('span', { class: `icone ${coin ? 'icone-coin' : ''}`, 'aria-hidden': 'true' }, icone(c)));
-      contenu.append(el('span', { class: 'nom' }, c.type === 'prison' ? "Château d'If" : c.nom));
+      contenu.append(el('span', { class: 'nom' }, c.type === 'prison' ? 'Les Baumettes' : c.nom));
       if (c.prix) contenu.append(el('span', { class: 'prix' }, euros(c.prix)));
       if (c.montant) contenu.append(el('span', { class: 'prix' }, `Payez ${euros(c.montant)}`));
       if (c.type === 'prison') contenu.append(el('span', { class: 'prix' }, 'Simple visite'));
@@ -121,7 +124,7 @@ export class VuePlateau {
 
   majCagnotte(etat) {
     this.cagnotte.hidden = !etat.options.parcGratuit;
-    this.cagnotte.textContent = `Cagnotte du Parc gratuit : ${euros(etat.cagnotte)}`;
+    this.cagnotte.textContent = `Cagnotte du Trottoir gratuit : ${euros(etat.cagnotte)}`;
   }
 
   majJournal(lignes) {

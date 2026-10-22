@@ -21,18 +21,18 @@ export function ficheCase(c, etat, plateau) {
     entete = el('div', { class: 'fiche-entete fiche-neutre' }, el('small', {}, 'Gare'), el('strong', {}, c.nom));
     c.loyers.forEach((l, i) => ligne(`Avec ${i + 1} gare${i ? 's' : ''}`, euros(l)));
   } else if (c.type === 'compagnie') {
-    entete = el('div', { class: 'fiche-entete fiche-neutre' }, el('small', {}, 'Compagnie'), el('strong', {}, c.nom));
-    ligne('Avec 1 compagnie', `${c.multiplicateurs[0]} × le total des dés`);
-    ligne('Avec les 2 compagnies', `${c.multiplicateurs[1]} × le total des dés`);
+    entete = el('div', { class: 'fiche-entete fiche-neutre' }, el('small', {}, c.description ?? 'Compagnie'), el('strong', {}, c.nom));
+    ligne('Avec 1 établissement', `${c.multiplicateurs[0]} × le total des dés`);
+    ligne('Avec Chez Jeannot et le Viaghji', `${c.multiplicateurs[1]} × le total des dés`);
   } else {
     const descriptions = {
       depart: 'Recevez 200 € à chaque passage.',
       taxe: `Payez ${euros(c.montant ?? 0)} à la banque.`,
       chance: 'Tirez une carte Chance.',
       communaute: 'Tirez une carte Caisse de communauté.',
-      prison: 'Simple visite, ou séjour forcé au Château d\'If.',
-      parc: 'Repos à la plage. Avec la règle de la maison, ramassez la cagnotte !',
-      allez_prison: 'Allez directement au Château d\'If, sans passer par la case Départ.'
+      prison: 'Simple visite, ou séjour forcé aux Baumettes.',
+      parc: 'Stationnement gratuit sur le trottoir du Jarret. Avec la règle de la maison, ramassez la cagnotte !',
+      allez_prison: 'Allez directement aux Baumettes, sans passer par la case Départ.'
     };
     return el('div', { class: 'fiche' },
       el('div', { class: 'fiche-entete fiche-neutre' }, el('strong', {}, c.nom)),

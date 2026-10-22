@@ -33,7 +33,7 @@ Object.assign(Controleur.prototype, {
   },
 
   libelleRefusAchat() {
-    return 'Ne pas acheter (mise aux enchères)';
+    return 'Ne pas acheter';
   },
 
   // Les actions de gestion ne relancent pas la modale de décision : la fenêtre de gestion se rouvre.

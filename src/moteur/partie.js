@@ -23,7 +23,7 @@ const refuser = (message) => { throw new ErreurRegle(message); };
 const MAX_JOURNAL = 300;
 
 export const OPTIONS_PAR_DEFAUT = {
-  parcGratuit: false,   // taxes et amendes déposées sur le Parc gratuit
+  parcGratuit: false,   // taxes et amendes déposées sur le Trottoir gratuit
   doubleDepart: false,  // 400 € en s'arrêtant pile sur Départ
   partieRapide: false,  // limite de tours, victoire au patrimoine
   toursMax: 20
@@ -235,7 +235,7 @@ export class Partie {
   // Argent
   // ---------------------------------------------------------------------------
 
-  // Destination de l'argent des taxes et amendes : la banque, ou la cagnotte du Parc gratuit (option).
+  // Destination de l'argent des taxes et amendes : la banque, ou la cagnotte du Trottoir gratuit (option).
   get destinationAmendes() {
     return this.etat.options.parcGratuit ? 'cagnotte' : 'banque';
   }
@@ -290,11 +290,11 @@ export class Partie {
       } else {
         j.toursPrison++;
         if (j.toursPrison < 3) {
-          this.log(`${j.nom} reste au Château d'If (essai ${j.toursPrison}/3).`);
+          this.log(`${j.nom} reste aux Baumettes (essai ${j.toursPrison}/3).`);
           return;
         }
         this.log(`${j.nom} a raté son troisième essai : ${AMENDE_PRISON} € à payer pour sortir.`);
-        this.payer(joueur, AMENDE_PRISON, this.destinationAmendes, 'sortie du Château d\'If');
+        this.payer(joueur, AMENDE_PRISON, this.destinationAmendes, 'sortie des Baumettes');
         this.sortirDePrison(j, 'après trois essais');
       }
       // On ne rejoue pas après une sortie de prison.
@@ -305,7 +305,7 @@ export class Partie {
     if (double) {
       e.doubles++;
       if (e.doubles === 3) {
-        this.log(`Trois doubles d'affilée ! ${j.nom} file au Château d'If.`);
+        this.log(`Trois doubles d'affilée ! ${j.nom} file aux Baumettes.`);
         this.envoyerEnPrison(joueur);
         return;
       }
@@ -317,7 +317,7 @@ export class Partie {
   sortirDePrison(j, comment) {
     j.enPrison = false;
     j.toursPrison = 0;
-    this.log(`${j.nom} quitte le Château d'If ${comment}.`);
+    this.log(`${j.nom} sort des Baumettes ${comment}.`);
   }
 
   envoyerEnPrison(joueurId) {
@@ -330,7 +330,7 @@ export class Partie {
     e.peutRejouer = false;
     e.doubles = 0;
     this.emettre({ type: 'teleportation', joueur: joueurId, de: depart, vers: CASE_PRISON });
-    this.log(`${j.nom} part au Château d'If.`);
+    this.log(`${j.nom} part aux Baumettes.`);
   }
 
   aPayerPrison({ joueur }) {
@@ -338,7 +338,7 @@ export class Partie {
     if (!j.enPrison) refuser("Ce joueur n'est pas en prison.");
     if (this.etat.aLance) refuser('Il faut payer avant de lancer les dés.');
     if (j.argent < AMENDE_PRISON) refuser(`Il faut ${AMENDE_PRISON} € pour sortir.`);
-    this.payer(joueur, AMENDE_PRISON, this.destinationAmendes, 'sortie du Château d\'If');
+    this.payer(joueur, AMENDE_PRISON, this.destinationAmendes, 'sortie des Baumettes');
     this.sortirDePrison(j, `en payant ${AMENDE_PRISON} €`);
   }
 
@@ -425,13 +425,13 @@ export class Partie {
           const gain = e.cagnotte;
           e.cagnotte = 0;
           this.recevoir(joueurId, gain);
-          this.log(`${j.nom} se pose à la plage des Catalans et ramasse la cagnotte : ${gain} € !`);
+          this.log(`${j.nom} se gare sur le trottoir du Jarret et ramasse la cagnotte : ${gain} € !`);
         } else {
-          this.log(`${j.nom} se repose à la plage des Catalans.`);
+          this.log(`${j.nom} se gare tranquillement sur le trottoir du Jarret.`);
         }
         break;
       case 'prison':
-        this.log(`${j.nom} est en simple visite au Château d'If.`);
+        this.log(`${j.nom} est en simple visite aux Baumettes.`);
         break;
       default:
         break;
@@ -528,12 +528,12 @@ export class Partie {
     const a = this.etat.attente;
     if (a?.type !== 'achat') refuser('Aucun achat en attente.');
     this.etat.attente = null;
-    this.log(`${this.joueur(joueur).nom} ne veut pas de ${this.nomCase(a.case)} : place aux enchères !`);
-    this.etat.encheresEnAttente.unshift(a.case);
+    this.log(`${this.joueur(joueur).nom} ne veut pas de ${this.nomCase(a.case)}, qui reste à la banque.`);
   }
 
   // ---------------------------------------------------------------------------
-  // Enchères : chacun à son tour surenchérit ou passe ; celui qui passe est éliminé.
+  // Enchères (biens d'un joueur en faillite envers la banque) :
+  // chacun à son tour surenchérit ou passe ; celui qui passe est éliminé.
   // ---------------------------------------------------------------------------
 
   demarrerEnchere(index) {

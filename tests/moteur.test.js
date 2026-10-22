@@ -250,7 +250,7 @@ describe('achats et loyers', () => {
     assert.equal(p.etat.joueurs[1].argent, 1520);
   });
 
-  test('taxes payées à la banque, ou sur le Parc gratuit avec l\'option', () => {
+  test('taxes payées à la banque, ou sur le Trottoir gratuit avec l\'option', () => {
     const p = creerPartie(2);
     ok(p, { type: 'lancer', joueur: 0, des: [1, 3] });
     assert.equal(p.etat.joueurs[0].argent, 1300);
@@ -359,7 +359,7 @@ describe('cartes', () => {
     assert.equal(surChance('chance-15').etat.joueurs[0].argent, 1650);
   });
 
-  test('payer une carte alimente la cagnotte avec l\'option Parc gratuit', () => {
+  test('payer une carte alimente la cagnotte avec l\'option Trottoir gratuit', () => {
     const p = creerPartie(2, { parcGratuit: true });
     p.etat.joueurs[0].position = 4;
     piocherEnPremier(p, 'chance', 'chance-12');

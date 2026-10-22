@@ -35,7 +35,7 @@ export function rendrePanneaux(racine, partie, { surClicCase }) {
     });
     const statut = [];
     if (j.faillite) statut.push('En faillite');
-    else if (j.enPrison) statut.push("Au Château d'If");
+    else if (j.enPrison) statut.push("Aux Baumettes");
     if (j.ia) statut.push('Ordinateur');
     return el('section', {
       class: `panneau-joueur ${j.id === etat.courant ? 'courant' : ''} ${j.id === actif ? 'actif' : ''} ${j.faillite ? 'faillite' : ''}`,
@@ -47,7 +47,7 @@ export function rendrePanneaux(racine, partie, { surClicCase }) {
         el('span', { class: 'nom-joueur' }, j.nom),
         el('span', { class: 'argent' }, euros(j.argent))),
       statut.length ? el('p', { class: 'statut' }, statut.join(' · ')) : null,
-      j.cartesSortie.length ? el('p', { class: 'cartes-speciales' }, `🎟️ ${j.cartesSortie.length} carte(s) « sortie du Château d'If »`) : null,
+      j.cartesSortie.length ? el('p', { class: 'cartes-speciales' }, `🎟️ ${j.cartesSortie.length} carte(s) « sortie des Baumettes »`) : null,
       listes.length ? el('ul', { class: 'proprietes-joueur' }, listes) : el('p', { class: 'vide' }, 'Aucune propriété'));
   }));
 }

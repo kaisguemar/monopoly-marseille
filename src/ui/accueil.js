@@ -62,7 +62,7 @@ export function afficherAccueil(racine, { sauvegarde, surNouvellePartie, surRepr
       listeJoueurs),
     el('fieldset', {},
       el('legend', {}, 'Règles de la maison (facultatives)'),
-      caseOption('parcGratuit', 'Cagnotte du Parc gratuit', 'Taxes et amendes vont sur la plage des Catalans ; qui s\'y arrête ramasse tout.'),
+      caseOption('parcGratuit', 'Cagnotte du Trottoir gratuit', 'Taxes et amendes s\'accumulent sur le trottoir du Jarret ; qui s\'y arrête ramasse tout.'),
       caseOption('doubleDepart', 'Double salaire sur Départ', 'S\'arrêter pile sur Départ rapporte 400 € au lieu de 200 €.'),
       caseOption('partieRapide', 'Partie rapide', 'La partie s\'arrête après un nombre de tours ; le plus gros patrimoine l\'emporte.'),
       el('label', { class: 'champ champ-ligne', for: 'tours-max' }, el('span', {}, 'Nombre de tours de la partie rapide '), champTours)),

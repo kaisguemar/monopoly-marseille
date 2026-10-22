@@ -50,8 +50,8 @@ describe('décisions de l\'ordinateur', () => {
 
   test('enchérit jusqu\'à une limite raisonnable puis passe', () => {
     const p = creerPartie(2);
-    ok(p, { type: 'lancer', joueur: 0, des: [1, 2] });
-    ok(p, { type: 'refuserAchat', joueur: 0 });
+    p.etat.encheresEnAttente.push(3);
+    p.progresser();
     const action = deciderAction(p);
     assert.equal(action.type, 'encherir');
     assert.equal(action.montant, 10);

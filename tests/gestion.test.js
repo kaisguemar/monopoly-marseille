@@ -141,15 +141,25 @@ describe('hypothèques', () => {
 });
 
 describe('enchères', () => {
+  // Enchère sur Marché des Capucins, comme pour un bien repris par la banque.
   const ouvrir = (n = 3) => {
     const p = creerPartie(n);
-    ok(p, { type: 'lancer', joueur: 0, des: [1, 2] });
-    ok(p, { type: 'refuserAchat', joueur: 0 });
+    p.etat.encheresEnAttente.push(3);
+    p.progresser();
     assert.equal(p.etat.attente.type, 'enchere');
     return p;
   };
 
-  test('le refus d\'achat ouvre une enchère entre tous les joueurs', () => {
+  test("refuser d'acheter n'ouvre pas d'enchère : la propriété reste à la banque", () => {
+    const p = creerPartie(3);
+    ok(p, { type: 'lancer', joueur: 0, des: [1, 2] });
+    ok(p, { type: 'refuserAchat', joueur: 0 });
+    assert.equal(p.etat.attente, null);
+    assert.equal(p.etat.proprietes[3].proprietaire, null);
+    ok(p, { type: 'finirTour', joueur: 0 });
+  });
+
+  test('une enchère se joue entre tous les joueurs', () => {
     const p = ouvrir();
     assert.deepEqual(p.etat.attente.participants, [0, 1, 2]);
     assert.equal(p.joueurActif(), 0);
@@ -181,7 +191,7 @@ describe('enchères', () => {
     ok(p, { type: 'passerEnchere', joueur: 1 });
     assert.equal(p.etat.attente, null);
     assert.equal(p.etat.proprietes[3].proprietaire, null);
-    ok(p, { type: 'finirTour', joueur: 0 });
+    ok(p, { type: 'lancer', joueur: 0, des: [1, 2] });
   });
 
   test('le dernier joueur restant peut encore enchérir', () => {
@@ -307,7 +317,7 @@ describe('faillite', () => {
     p.etat.joueurs[0].cartesSortie = ['chance'];
     p.etat.pioches.chance = p.etat.pioches.chance.filter((id) => id !== 'chance-08');
     p.etat.joueurs[0].position = 1;
-    ok(p, { type: 'lancer', joueur: 0, des: [1, 2] }); // Impôt sur la sardine : 200 €
+    ok(p, { type: 'lancer', joueur: 0, des: [1, 2] }); // Station Total : 200 €
     ok(p, { type: 'declarerFaillite', joueur: 0 });
     assert.equal(p.etat.attente.type, 'enchere');
     assert.equal(p.etat.attente.case, 1);
