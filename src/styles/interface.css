@@ -1,0 +1,71 @@
+/* Mise en page du jeu, panneaux des joueurs, fiches, cartes, accueil. */
+.jeu {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1500px; margin: 0 auto;
+  align-items: start;
+}
+
+.barre-laterale { display: flex; flex-direction: column; gap: .8rem; max-height: calc(100vh - 2rem); overflow-y: auto; position: sticky; top: 1rem; }
+
+.commandes { background: #fff; border-radius: var(--rayon); padding: .8rem; box-shadow: var(--ombre); border-left: 6px solid var(--ocre); }
+.tour-info { margin: 0 0 .5rem; font-weight: 700; color: var(--mer-fonce); }
+.actions { display: flex; flex-wrap: wrap; gap: .45rem; }
+.actions .btn { flex: 1 1 auto; }
+
+.panneaux { display: flex; flex-direction: column; gap: .6rem; }
+.panneau-joueur { background: #fff; border-radius: var(--rayon); padding: .6rem .8rem; border-left: 6px solid; box-shadow: 0 2px 8px rgba(8, 63, 99, .1); }
+.panneau-joueur.courant { box-shadow: 0 0 0 3px var(--ocre), var(--ombre); }
+.panneau-joueur.faillite { opacity: .55; }
+.panneau-joueur header { display: flex; align-items: center; gap: .5rem; }
+.avatar { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 3px solid; background: var(--calcaire); }
+.nom-joueur { flex: 1; font-weight: 700; overflow-wrap: anywhere; }
+.argent { font-weight: 800; color: var(--mer-fonce); font-variant-numeric: tabular-nums; }
+.statut { margin: .3rem 0 0; font-size: .85rem; color: var(--terre); font-weight: 600; }
+.cartes-speciales { margin: .3rem 0 0; font-size: .85rem; }
+.panneau-joueur .vide { margin: .3rem 0 0; font-size: .85rem; color: var(--texte-doux); }
+.proprietes-joueur { list-style: none; margin: .4rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+.groupe-joueur > ul { list-style: none; margin: .15rem 0 0 .3rem; padding: 0; font-size: .88rem; }
+.puce-groupe { display: inline-block; font-size: .75rem; font-weight: 700; padding: .05rem .5rem; border-radius: 4px; }
+.lien-case { border: 0; background: none; padding: .1rem 0; color: var(--mer-fonce); text-decoration: underline; cursor: pointer; text-align: left; min-height: 28px; }
+.lien-case.hypothequee { color: var(--texte-doux); text-decoration: line-through; }
+.details { color: var(--texte-doux); font-size: .82rem; }
+
+/* Fiche de propriété */
+.fiche { border: 2px solid var(--texte); border-radius: 8px; background: #fff; overflow: hidden; max-width: 360px; margin: 0 auto .5rem; }
+.fiche-entete { display: flex; flex-direction: column; align-items: center; padding: .6rem; text-align: center; }
+.fiche-entete strong { font-size: 1.15rem; text-transform: uppercase; }
+.fiche-neutre { background: var(--mer-clair); color: var(--mer-fonce); }
+.fiche p { padding: 0 .8rem; }
+.fiche-loyers { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.fiche-loyers th { text-align: left; font-weight: 500; padding: .2rem .8rem; }
+.fiche-loyers td { text-align: right; padding: .2rem .8rem; font-variant-numeric: tabular-nums; }
+.fiche-loyers tr:nth-child(even) { background: var(--calcaire); }
+.fiche-proprio { margin: .5rem 0; font-size: .9rem; }
+
+/* Carte tirée */
+.carte-tiree { border-radius: 10px; padding: 1rem 1.2rem; border: 3px solid; }
+.carte-chance { background: #fbe7dc; border-color: var(--terre); }
+.carte-communaute { background: var(--mer-clair); border-color: var(--mer); }
+.carte-joueur { margin: 0 0 .5rem; font-weight: 600; color: var(--texte-doux); }
+.carte-texte { margin: 0; font-size: 1.15rem; font-family: var(--police-titre); }
+
+.victoire { font-size: 1.4rem; text-align: center; font-weight: 700; }
+
+/* Accueil provisoire */
+.accueil-simple { display: flex; flex-direction: column; gap: .8rem; max-width: 420px; margin: 3rem auto; padding: 1.5rem; background: #fff; border-radius: 14px; box-shadow: var(--ombre); }
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .jeu { grid-template-columns: 1fr; padding: .5rem; }
+  .plateau-conteneur { width: min(100%, 100vh); }
+  .barre-laterale { position: static; max-height: none; }
+  .commandes { position: sticky; bottom: 0; z-index: 5; }
+  .panneaux { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+}
+@media (max-width: 600px) {
+  .centre { padding: .5em; gap: .4em; }
+  .pioches { display: none; }
+}

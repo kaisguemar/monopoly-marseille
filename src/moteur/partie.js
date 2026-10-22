@@ -314,7 +314,7 @@ export class Partie {
     e.peutRejouer = false;
     e.doubles = 0;
     this.emettre({ type: 'teleportation', joueur: joueurId, de: depart, vers: CASE_PRISON });
-    this.log(`${j.nom} est envoyé au Château d'If.`);
+    this.log(`${j.nom} part au Château d'If.`);
   }
 
   aPayerPrison({ joueur }) {

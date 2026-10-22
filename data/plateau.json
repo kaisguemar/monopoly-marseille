@@ -2,34 +2,42 @@
   "groupes": {
     "marron": {
       "nom": "Belsunce – Noailles",
+      "nomCourt": "Noailles",
       "couleur": "#8B5A2B"
     },
     "bleu-ciel": {
       "nom": "Le Panier",
+      "nomCourt": "Panier",
       "couleur": "#7FC8E8"
     },
     "violet": {
       "nom": "La Plaine – Cours Julien",
+      "nomCourt": "La Plaine",
       "couleur": "#C2459A"
     },
     "orange": {
       "nom": "Centre-ville",
+      "nomCourt": "Centre",
       "couleur": "#F08A24"
     },
     "rouge": {
       "nom": "Endoume",
+      "nomCourt": "Endoume",
       "couleur": "#D7312E"
     },
     "jaune": {
       "nom": "Prado – Castellane",
+      "nomCourt": "Prado",
       "couleur": "#F2D024"
     },
     "vert": {
       "nom": "Roucas-Blanc – Périer",
+      "nomCourt": "Roucas",
       "couleur": "#2E9B4F"
     },
     "bleu-fonce": {
       "nom": "Bord de mer",
+      "nomCourt": "Bord de mer",
       "couleur": "#1D4E9E"
     }
   },
