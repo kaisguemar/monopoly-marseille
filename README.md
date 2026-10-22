@@ -47,6 +47,9 @@ node --test
 2. Cliquez sur **Nouvelle partie** (ou **Reprendre la partie** si une sauvegarde existe).
 3. À votre tour : **Lancer les dés**, puis répondez aux fenêtres (achat, carte, dette…), et **Finir le tour**. Les boutons de la colonne de droite permettent de construire, d'hypothéquer et de proposer des échanges.
 4. Cliquez sur une case du plateau (ou sur une propriété dans un panneau joueur) pour afficher sa fiche : prix, loyers, propriétaire.
+5. Le bouton **🧊 Vue 3D** (sous « Tour… », à droite) incline le plateau et l'entoure d'un décor marseillais : la mer, les calanques, la Bonne Mère, les façades du port, un phare et des bateaux. Les maisons et les hôtels y sont en volume, aux couleurs de leur propriétaire, et les pions se tiennent debout. **🗺️ Vue à plat** revient au plateau vu de dessus ; le choix est retenu par le navigateur.
+
+Dans les deux vues, les maisons et les hôtels sont dessinés aux couleurs du joueur qui les possède, à la place du nom du quartier sur le bandeau de couleur.
 
 Le jeu se joue entièrement au clavier : le bouton d'action principal reçoit le focus à chaque tour (Entrée pour lancer les dés), les fenêtres gardent le focus et se ferment avec Échap quand c'est possible.
 
@@ -157,6 +160,7 @@ src/
     controleur.js       relie le moteur (local) ou le serveur (en ligne) à l'interface, rejoue les animations
     plateau.js          plateau 11 × 11, centre, pions
     des.js              dés 3D animés
+    vue3d.js            vue 3D : scène inclinée, décor, maisons et hôtels en volume, bouton de bascule
     panneaux.js         panneaux des joueurs (et présence en ligne)
     fiche.js            fiche de propriété
     gestion.js          constructions, hypothèques, enchères, échanges, faillite
@@ -167,7 +171,7 @@ src/
     modale.js           fenêtres modales accessibles
     pions.js            pions marseillais en SVG
     utilitaires.js      outils DOM
-  styles/               base.css, plateau.css, interface.css, pastis.css (choix du mode et thème Pastis)
+  styles/               base.css, plateau.css, interface.css, vue3d.css, pastis.css (choix du mode et thème Pastis)
 data/
   plateau.json          les 40 cases et les 8 quartiers
   cartes.json           16 cartes Chance + 16 cartes Caisse de communauté, et les 10 cartes du mode Pastis
@@ -228,5 +232,6 @@ Actions disponibles : `lancer`, `acheter`, `refuserAchat`, `encherir`, `passerEn
 - [x] Animation 3D du lancer de dés
 - [x] Multijoueur en ligne avec reconnexion
 - [x] Mode Pastis : thème jaune et bleu, gorgées et cartes à boire, en local comme en ligne
+- [x] Vue 3D avec décor, maisons et hôtels aux couleurs du propriétaire
 
 Idées pour la suite : sons (cigales, sirène du port), statistiques de fin de partie, chat dans le salon.
