@@ -54,6 +54,30 @@
 
 .victoire { font-size: 1.4rem; text-align: center; font-weight: 700; }
 
+/* Gestion des biens */
+.table-gestion { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.table-gestion th, .table-gestion td { padding: .35rem .4rem; border-bottom: 1px solid var(--calcaire-fonce); text-align: left; vertical-align: middle; }
+.table-gestion th { font-weight: 600; }
+.cellule-actions { display: flex; flex-wrap: wrap; gap: .3rem; justify-content: flex-end; }
+.puce-neutre { background: #5f6b73; color: #fff; }
+.alerte { background: #fbe9e7; color: var(--danger); padding: .5rem .8rem; border-radius: 8px; font-weight: 600; }
+.aide { font-size: .88rem; color: var(--texte-doux); }
+
+/* Enchères */
+.enchere-etat { font-weight: 600; }
+.enchere-saisie { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.enchere-saisie input { width: 7rem; min-height: 40px; padding: .3rem .5rem; border: 2px solid var(--mer); border-radius: 8px; font-size: 1.1rem; }
+
+/* Échanges */
+.formulaire-echange select, .formulaire-echange input[type="number"] { min-height: 36px; padding: .2rem .4rem; border: 2px solid var(--mer); border-radius: 8px; }
+.formulaire-echange input[type="number"] { width: 6.5rem; }
+.colonnes-echange { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.colonne-echange { display: flex; flex-direction: column; gap: .35rem; border: 2px solid var(--calcaire-fonce); border-radius: 10px; background: #fff; }
+.colonne-echange legend { font-weight: 700; color: var(--mer-fonce); padding: 0 .3rem; }
+.option-echange { display: flex; align-items: center; gap: .35rem; min-height: 32px; }
+.resume-echange { padding-left: 1.2rem; }
+@media (max-width: 600px) { .colonnes-echange { grid-template-columns: 1fr; } }
+
 /* Accueil provisoire */
 .accueil-simple { display: flex; flex-direction: column; gap: .8rem; max-width: 420px; margin: 3rem auto; padding: 1.5rem; background: #fff; border-radius: 14px; box-shadow: var(--ombre); }
 

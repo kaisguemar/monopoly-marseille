@@ -11,8 +11,9 @@
 
 import { graineAleatoire, lancerDe, melanger } from './alea.js';
 import {
-  ARGENT_INITIAL, SALAIRE_DEPART, AMENDE_PRISON, STOCK_MAISONS, STOCK_HOTELS, CASE_PRISON,
-  estAchetable, calculerLoyer, compterConstructions
+  ARGENT_INITIAL, SALAIRE_DEPART, AMENDE_PRISON, STOCK_MAISONS, STOCK_HOTELS, CASE_PRISON, HOTEL,
+  estAchetable, calculerLoyer, compterConstructions, casesDuGroupe, casesSoeurs, possedeGroupe,
+  proprietesDe, coutLevee, patrimoine, valeurLiquidable
 } from './regles.js';
 
 export class ErreurRegle extends Error {}
@@ -213,6 +214,21 @@ export class Partie {
     e.echange = null;
     this.log(gagnantId === null ? 'La partie est terminée.' : `🏆 ${this.joueur(gagnantId).nom} remporte la partie ! Fan de chichourle, quel champion !`);
     this.emettre({ type: 'fin', gagnant: gagnantId });
+  }
+
+  // Partie rapide : victoire au patrimoine le plus élevé.
+  terminerAuPatrimoine() {
+    const classement = this.classement();
+    this.log(`Fin de la partie rapide après ${this.etat.options.toursMax} tours. Place au décompte des patrimoines !`);
+    for (const { joueur, valeur } of classement) this.log(`${joueur.nom} : ${valeur} €.`);
+    this.terminer(classement[0].joueur.id);
+  }
+
+  // Joueurs encore en jeu triés par patrimoine décroissant.
+  classement() {
+    return this.joueursEnJeu()
+      .map((joueur) => ({ joueur, valeur: patrimoine(this.etat, this.plateau, joueur.id) }))
+      .sort((x, y) => y.valeur - x.valeur);
   }
 
   // ---------------------------------------------------------------------------
@@ -512,7 +528,251 @@ export class Partie {
     const a = this.etat.attente;
     if (a?.type !== 'achat') refuser('Aucun achat en attente.');
     this.etat.attente = null;
-    this.log(`${this.joueur(joueur).nom} ne veut pas de ${this.nomCase(a.case)}.`);
+    this.log(`${this.joueur(joueur).nom} ne veut pas de ${this.nomCase(a.case)} : place aux enchères !`);
+    this.etat.encheresEnAttente.unshift(a.case);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Enchères : chacun à son tour surenchérit ou passe ; celui qui passe est éliminé.
+  // ---------------------------------------------------------------------------
+
+  demarrerEnchere(index) {
+    const e = this.etat;
+    const n = e.joueurs.length;
+    const participants = [];
+    for (let k = 0; k < n; k++) {
+      const j = e.joueurs[(e.courant + k) % n];
+      if (!j.faillite) participants.push(j.id);
+    }
+    e.attente = { type: 'enchere', case: index, participants, actif: 0, mise: 0, meilleur: null };
+    this.emettre({ type: 'enchere', case: index });
+    this.log(`Enchères ouvertes pour ${this.nomCase(index)} (valeur ${this.plateau.cases[index].prix} €).`);
+  }
+
+  aEncherir({ joueur, montant }) {
+    const a = this.etat.attente;
+    if (a?.type !== 'enchere') refuser('Aucune enchère en cours.');
+    if (!Number.isInteger(montant) || montant <= a.mise) refuser(`L'offre doit dépasser ${a.mise} €.`);
+    if (montant > this.joueur(joueur).argent) refuser("Vous n'avez pas assez d'argent pour cette offre.");
+    a.mise = montant;
+    a.meilleur = joueur;
+    this.log(`${this.joueur(joueur).nom} offre ${montant} €.`);
+    a.actif = (a.actif + 1) % a.participants.length;
+    this.verifierFinEnchere();
+  }
+
+  aPasserEnchere({ joueur }) {
+    const a = this.etat.attente;
+    if (a?.type !== 'enchere') refuser('Aucune enchère en cours.');
+    a.participants.splice(a.actif, 1);
+    if (a.actif >= a.participants.length) a.actif = 0;
+    this.log(`${this.joueur(joueur).nom} passe.`);
+    this.verifierFinEnchere();
+  }
+
+  verifierFinEnchere() {
+    const e = this.etat;
+    const a = e.attente;
+    if (!a.participants.length) {
+      e.attente = null;
+      this.log(`Personne ne veut de ${this.nomCase(a.case)} : elle reste à la banque.`);
+      return;
+    }
+    if (a.meilleur !== null && a.participants[a.actif] === a.meilleur) {
+      e.attente = null;
+      const j = this.joueur(a.meilleur);
+      j.argent -= a.mise;
+      e.proprietes[a.case].proprietaire = j.id;
+      this.emettre({ type: 'argent', joueur: j.id, montant: -a.mise });
+      this.log(`Adjugé ! ${j.nom} remporte ${this.nomCase(a.case)} pour ${a.mise} €.`);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Constructions et hypothèques
+  // ---------------------------------------------------------------------------
+
+  verifierGestion(joueur, index) {
+    const e = this.etat;
+    if (e.attente?.type === 'enchere' || e.echange) refuser('Impossible pendant une enchère ou un échange.');
+    const c = this.plateau.cases[index];
+    const p = e.proprietes[index];
+    if (!c || !p) refuser('Case invalide.');
+    if (p.proprietaire !== joueur) refuser('Cette propriété ne vous appartient pas.');
+    return { c, p };
+  }
+
+  aConstruire({ joueur, case: index }) {
+    const e = this.etat;
+    const { c, p } = this.verifierGestion(joueur, index);
+    if (c.type !== 'propriete') refuser('On ne construit que sur les terrains.');
+    if (!possedeGroupe(e, this.plateau, joueur, c.groupe)) refuser('Il faut posséder tout le quartier pour construire.');
+    const groupe = casesDuGroupe(this.plateau, c.groupe);
+    if (groupe.some((i) => e.proprietes[i].hypotheque)) refuser('Une propriété du quartier est hypothéquée.');
+    if (p.maisons >= HOTEL) refuser('Il y a déjà un hôtel.');
+    if (p.maisons > Math.min(...groupe.map((i) => e.proprietes[i].maisons))) refuser('Construisez uniformément : les autres terrains du quartier d\'abord.');
+    const hotel = p.maisons === 4;
+    if (hotel && e.banque.hotels === 0) refuser('La banque n\'a plus d\'hôtel disponible.');
+    if (!hotel && e.banque.maisons === 0) refuser('La banque n\'a plus de maison disponible.');
+    const j = this.joueur(joueur);
+    if (j.argent < c.prixMaison) refuser(`Il faut ${c.prixMaison} € pour construire.`);
+    j.argent -= c.prixMaison;
+    if (hotel) { e.banque.hotels--; e.banque.maisons += 4; } else e.banque.maisons--;
+    p.maisons++;
+    this.emettre({ type: 'argent', joueur, montant: -c.prixMaison });
+    this.log(`${j.nom} construit ${hotel ? 'un hôtel' : 'une maison'} sur ${c.nom}.`);
+  }
+
+  aVendreConstruction({ joueur, case: index }) {
+    const e = this.etat;
+    const { c, p } = this.verifierGestion(joueur, index);
+    if (!p.maisons) refuser('Aucune construction à vendre ici.');
+    const groupe = casesDuGroupe(this.plateau, c.groupe);
+    if (p.maisons < Math.max(...groupe.map((i) => e.proprietes[i].maisons))) refuser('Vendez uniformément : les terrains les plus construits d\'abord.');
+    if (p.maisons === HOTEL) {
+      if (e.banque.maisons < 4) refuser('La banque n\'a pas 4 maisons pour remplacer l\'hôtel.');
+      e.banque.maisons -= 4;
+      e.banque.hotels++;
+    } else {
+      e.banque.maisons++;
+    }
+    const hotel = p.maisons === HOTEL;
+    p.maisons--;
+    this.recevoir(joueur, c.prixMaison / 2);
+    this.log(`${this.joueur(joueur).nom} revend ${hotel ? 'un hôtel' : 'une maison'} de ${c.nom} pour ${c.prixMaison / 2} €.`);
+  }
+
+  aHypothequer({ joueur, case: index }) {
+    const e = this.etat;
+    const { c, p } = this.verifierGestion(joueur, index);
+    if (p.hypotheque) refuser('Déjà hypothéquée.');
+    if (c.type === 'propriete' && casesDuGroupe(this.plateau, c.groupe).some((i) => e.proprietes[i].maisons)) {
+      refuser('Vendez d\'abord les constructions du quartier.');
+    }
+    p.hypotheque = true;
+    this.recevoir(joueur, c.hypotheque);
+    this.log(`${this.joueur(joueur).nom} hypothèque ${c.nom} et reçoit ${c.hypotheque} €.`);
+  }
+
+  aLeverHypotheque({ joueur, case: index }) {
+    const { c, p } = this.verifierGestion(joueur, index);
+    if (!p.hypotheque) refuser("Cette propriété n'est pas hypothéquée.");
+    const cout = coutLevee(c);
+    const j = this.joueur(joueur);
+    if (j.argent < cout) refuser(`Il faut ${cout} € pour lever l'hypothèque.`);
+    j.argent -= cout;
+    p.hypotheque = false;
+    this.emettre({ type: 'argent', joueur, montant: -cout });
+    this.log(`${j.nom} lève l'hypothèque de ${c.nom} pour ${cout} €.`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Échanges
+  // offre : { a, donne: { proprietes, argent, cartes }, recoit: { proprietes, argent, cartes } }
+  // ---------------------------------------------------------------------------
+
+  aProposerEchange({ joueur, offre }) {
+    const e = this.etat;
+    if (e.attente?.type === 'enchere' || e.echange) refuser('Un échange ou une enchère est déjà en cours.');
+    const cible = e.joueurs[offre?.a];
+    if (!cible || cible.faillite || cible.id === joueur) refuser("Choisissez un autre joueur pour l'échange.");
+    const normaliser = (cote) => ({
+      proprietes: [...new Set(cote?.proprietes ?? [])].map(Number),
+      argent: cote?.argent ?? 0,
+      cartes: cote?.cartes ?? 0
+    });
+    const donne = normaliser(offre.donne);
+    const recoit = normaliser(offre.recoit);
+    this.verifierCoteEchange(joueur, donne);
+    this.verifierCoteEchange(cible.id, recoit);
+    const vide = (x) => !x.proprietes.length && !x.argent && !x.cartes;
+    if (vide(donne) && vide(recoit)) refuser("L'échange est vide.");
+    e.echange = { de: joueur, a: cible.id, donne, recoit };
+    e.echangesProposes++;
+    this.log(`${this.joueur(joueur).nom} propose un échange à ${cible.nom}.`);
+  }
+
+  verifierCoteEchange(id, cote) {
+    const e = this.etat;
+    const j = this.joueur(id);
+    for (const i of cote.proprietes) {
+      if (e.proprietes[i]?.proprietaire !== id) refuser(`${this.plateau.cases[i]?.nom ?? 'Cette case'} n'appartient pas à ${j.nom}.`);
+      if (casesSoeurs(this.plateau, i).some((k) => e.proprietes[k].maisons)) refuser(`Vendez d'abord les constructions du quartier de ${this.nomCase(i)}.`);
+    }
+    if (!Number.isInteger(cote.argent) || cote.argent < 0 || cote.argent > j.argent) refuser(`${j.nom} ne dispose pas de cette somme.`);
+    if (!Number.isInteger(cote.cartes) || cote.cartes < 0 || cote.cartes > j.cartesSortie.length) refuser(`${j.nom} n'a pas ces cartes.`);
+  }
+
+  aRepondreEchange({ joueur, accepter }) {
+    const e = this.etat;
+    const ech = e.echange;
+    if (!ech) refuser('Aucun échange en attente.');
+    e.echange = null;
+    const de = this.joueur(ech.de);
+    const a = this.joueur(joueur);
+    if (!accepter) {
+      this.log(`${a.nom} refuse l'échange proposé par ${de.nom}.`);
+      return;
+    }
+    const transferer = (source, cible, cote) => {
+      for (const i of cote.proprietes) e.proprietes[i].proprietaire = cible.id;
+      source.argent -= cote.argent;
+      cible.argent += cote.argent;
+      for (let k = 0; k < cote.cartes; k++) cible.cartesSortie.push(source.cartesSortie.pop());
+    };
+    transferer(de, a, ech.donne);
+    transferer(a, de, ech.recoit);
+    this.log(`${a.nom} accepte l'échange avec ${de.nom}. Tope là !`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Faillite
+  // ---------------------------------------------------------------------------
+
+  aDeclarerFaillite({ joueur }) {
+    const d = this.etat.dettes[0];
+    if (!d || d.debiteur !== joueur) refuser('Aucune dette à régler.');
+    if (valeurLiquidable(this.etat, this.plateau, joueur) >= d.montant) {
+      refuser('Vous pouvez encore payer en vendant des constructions ou en hypothéquant.');
+    }
+    this.faillite(joueur, d.creancier);
+  }
+
+  // Met un joueur en faillite : ses biens vont au créancier (joueur), ou à la banque qui les remet aux enchères.
+  faillite(id, creancier) {
+    const e = this.etat;
+    const j = this.joueur(id);
+    // Les constructions sont revendues à la banque à moitié prix.
+    for (const i of proprietesDe(e, id)) {
+      const p = e.proprietes[i];
+      if (!p.maisons) continue;
+      if (p.maisons === HOTEL) e.banque.hotels++;
+      else e.banque.maisons += p.maisons;
+      j.argent += (p.maisons * this.plateau.cases[i].prixMaison) / 2;
+      p.maisons = 0;
+    }
+    const heritier = typeof creancier === 'number' && !this.joueur(creancier).faillite ? this.joueur(creancier) : null;
+    if (heritier) {
+      heritier.argent += j.argent;
+      for (const i of proprietesDe(e, id)) e.proprietes[i].proprietaire = heritier.id;
+      heritier.cartesSortie.push(...j.cartesSortie);
+      this.log(`💥 ${j.nom} fait faillite ! Ses biens reviennent à ${heritier.nom}.`);
+    } else {
+      if (creancier === 'cagnotte') e.cagnotte += j.argent;
+      for (const i of proprietesDe(e, id)) {
+        Object.assign(e.proprietes[i], { proprietaire: null, hypotheque: false, maisons: 0 });
+        e.encheresEnAttente.push(i);
+      }
+      for (const pioche of j.cartesSortie) this.rendreCarteSortie(pioche);
+      this.log(`💥 ${j.nom} fait faillite ! Ses propriétés reviennent à la banque et seront mises aux enchères.`);
+    }
+    Object.assign(j, { argent: 0, cartesSortie: [], faillite: true, enPrison: false });
+    e.dettes = e.dettes
+      .filter((d) => d.debiteur !== id)
+      .map((d) => (d.creancier === id ? { ...d, creancier: 'banque' } : d));
+    if (e.echange && (e.echange.de === id || e.echange.a === id)) e.echange = null;
+    if (e.attente && e.attente.joueur === id) e.attente = null;
+    this.emettre({ type: 'faillite', joueur: id });
   }
 
   // ---------------------------------------------------------------------------
@@ -550,6 +810,10 @@ export class Partie {
       suivant = (suivant + 1) % n;
       if (suivant === 0) e.tour++;
     } while (e.joueurs[suivant].faillite);
+    if (e.options.partieRapide && e.tour > e.options.toursMax) {
+      this.terminerAuPatrimoine();
+      return;
+    }
     e.courant = suivant;
     e.des = null;
     e.doubles = 0;
@@ -569,5 +833,14 @@ const ACTIONS = {
   acheter: 'aAcheter',
   refuserAchat: 'aRefuserAchat',
   payerDette: 'aPayerDette',
+  declarerFaillite: 'aDeclarerFaillite',
+  encherir: 'aEncherir',
+  passerEnchere: 'aPasserEnchere',
+  construire: 'aConstruire',
+  vendreConstruction: 'aVendreConstruction',
+  hypothequer: 'aHypothequer',
+  leverHypotheque: 'aLeverHypotheque',
+  proposerEchange: 'aProposerEchange',
+  repondreEchange: 'aRepondreEchange',
   finirTour: 'aFinirTour'
 };

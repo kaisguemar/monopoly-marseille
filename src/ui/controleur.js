@@ -10,6 +10,7 @@ import { ouvrirModale, fermerModale, modaleEstOuverte } from './modale.js';
 import { AMENDE_PRISON } from '../moteur/regles.js';
 
 const DUREE_PAS = 140;
+const ACTIONS_GESTION = ['construire', 'vendreConstruction', 'hypothequer', 'leverHypotheque'];
 
 export class Controleur {
   constructor(partie, racine, { surQuitter } = {}) {
@@ -118,7 +119,7 @@ export class Controleur {
     this.positions = {};
     this.occupe = false;
     this.rafraichir();
-    this.apresAction();
+    this.apresAction(action);
     return true;
   }
 
@@ -147,6 +148,9 @@ export class Controleur {
         case 'carte':
           await this.montrerCarte(ev);
           break;
+        case 'faillite':
+          this.notifier(`${etat.joueurs[ev.joueur].nom} fait faillite !`);
+          break;
         case 'journal':
           this.vue.majJournal(etat.journal.slice(0, ++lignesVisibles));
           break;
@@ -171,7 +175,7 @@ export class Controleur {
   }
 
   // Après chaque action : fin de partie, décision à demander, ou tour de l'ordinateur.
-  apresAction() {
+  apresAction(action) {
     const { etat } = this.partie;
     if (etat.terminee) {
       this.finDePartie();
@@ -182,6 +186,8 @@ export class Controleur {
       this.jouerOrdinateur?.();
       return;
     }
+    // Après une action de gestion, c'est la fenêtre de gestion qui se rouvre.
+    if (ACTIONS_GESTION.includes(action?.type)) return;
     if (etat.attente || etat.dettes.length || etat.echange) this.demanderDecision();
   }
 

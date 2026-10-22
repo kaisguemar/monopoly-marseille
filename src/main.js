@@ -2,6 +2,7 @@
 import { Partie } from './moteur/partie.js';
 import { validerPlateau, validerCartes } from './moteur/donnees.js';
 import { Controleur } from './ui/controleur.js';
+import './ui/gestion.js';
 import { el } from './ui/utilitaires.js';
 import { PIONS } from './ui/pions.js';
 
@@ -34,7 +35,8 @@ function afficherAccueil(donnees) {
 }
 
 function lancerPartie(donnees, partie) {
-  new Controleur(partie, app, { surQuitter: () => afficherAccueil(donnees) });
+  // Exposé pour le débogage depuis la console du navigateur.
+  window.monopoly = new Controleur(partie, app, { surQuitter: () => afficherAccueil(donnees) });
 }
 
 chargerDonnees()

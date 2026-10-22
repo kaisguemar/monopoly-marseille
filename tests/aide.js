@@ -40,3 +40,9 @@ export function piocherEnPremier(partie, pioche, id) {
   liste.splice(liste.indexOf(id), 1);
   liste.unshift(id);
 }
+
+// Refuse l'achat en attente puis laisse tout le monde passer à l'enchère.
+export function refuserAchat(partie, joueur) {
+  ok(partie, { type: 'refuserAchat', joueur });
+  while (partie.etat.attente?.type === 'enchere') ok(partie, { type: 'passerEnchere', joueur: partie.joueurActif() });
+}

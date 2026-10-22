@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { creerPartie, ok, ko, donner, piocherEnPremier, donnees } from './aide.js';
+import { creerPartie, ok, ko, donner, piocherEnPremier, refuserAchat, donnees } from './aide.js';
 import { Partie } from '../src/moteur/partie.js';
 import { calculerLoyer } from '../src/moteur/regles.js';
 
@@ -28,7 +28,7 @@ describe('création et sérialisation', () => {
     assert.deepEqual(q.etat, JSON.parse(json));
     // Même graine → mêmes dés ensuite.
     const r = Partie.restaurer(donnees, json);
-    if (q.etat.attente) { ok(q, { type: 'refuserAchat', joueur: 0 }); ok(r, { type: 'refuserAchat', joueur: 0 }); }
+    if (q.etat.attente) { refuserAchat(q, 0); refuserAchat(r, 0); }
     ok(q, { type: 'finirTour', joueur: 0 });
     ok(r, { type: 'finirTour', joueur: 0 });
     ok(q, { type: 'lancer', joueur: 1 });
@@ -48,7 +48,7 @@ describe('dés et déplacements', () => {
     assert.equal(p.etat.joueurs[0].position, 5);
     assert.equal(p.etat.attente.type, 'achat');
     ko(p, { type: 'finirTour', joueur: 0 });
-    ok(p, { type: 'refuserAchat', joueur: 0 });
+    refuserAchat(p, 0);
     ko(p, { type: 'lancer', joueur: 0 });
     ok(p, { type: 'finirTour', joueur: 0 });
     assert.equal(p.etat.courant, 1);
@@ -78,11 +78,11 @@ describe('dés et déplacements', () => {
     const p = creerPartie(2);
     ok(p, { type: 'lancer', joueur: 0, des: [3, 3] });
     assert.equal(p.etat.joueurs[0].position, 6);
-    ok(p, { type: 'refuserAchat', joueur: 0 });
+    refuserAchat(p, 0);
     ko(p, { type: 'finirTour', joueur: 0 });
     ok(p, { type: 'lancer', joueur: 0, des: [1, 2] });
     assert.equal(p.etat.joueurs[0].position, 9);
-    ok(p, { type: 'refuserAchat', joueur: 0 });
+    refuserAchat(p, 0);
     ok(p, { type: 'finirTour', joueur: 0 });
   });
 
@@ -91,7 +91,7 @@ describe('dés et déplacements', () => {
     piocherEnPremier(p, 'communaute', 'communaute-08');
     ok(p, { type: 'lancer', joueur: 0, des: [1, 1] }); // Caisse de communauté (2)
     ok(p, { type: 'lancer', joueur: 0, des: [2, 2] });
-    if (p.etat.attente) ok(p, { type: 'refuserAchat', joueur: 0 });
+    if (p.etat.attente) refuserAchat(p, 0);
     ok(p, { type: 'lancer', joueur: 0, des: [5, 5] });
     const j = p.etat.joueurs[0];
     assert.equal(j.position, 10);
@@ -141,7 +141,7 @@ describe('prison', () => {
       assert.equal(p.etat.joueurs[0].position, 10);
       ok(p, { type: 'finirTour', joueur: 0 });
       ok(p, { type: 'lancer', joueur: 1, des: [1, 2] });
-      ok(p, { type: 'refuserAchat', joueur: 1 });
+      refuserAchat(p, 1);
       ok(p, { type: 'finirTour', joueur: 1 });
     }
     ok(p, { type: 'lancer', joueur: 0, des: [1, 2] });

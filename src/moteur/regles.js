@@ -55,7 +55,7 @@ export function compterConstructions(etat, joueurId) {
 }
 
 // Coût de levée d'une hypothèque : valeur hypothécaire + 10 %, arrondi à l'euro supérieur.
-export const coutLevee = (c) => Math.ceil(c.hypotheque * 1.1);
+export const coutLevee = (c) => c.hypotheque + Math.ceil(c.hypotheque / 10);
 
 // Patrimoine : argent + valeur des propriétés (nette d'hypothèque) + constructions au prix d'achat.
 export function patrimoine(etat, plateau, joueurId) {
