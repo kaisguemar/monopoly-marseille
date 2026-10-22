@@ -50,8 +50,8 @@ test('les groupes vont du moins cher au plus cher et sont contigus', () => {
   for (let i = 1; i < proprietes.length; i++) assert.ok(proprietes[i].prix >= proprietes[i - 1].prix);
   const ordre = [...new Set(proprietes.map((c) => c.groupe))];
   assert.equal(ordre.length, 8, 'chaque groupe forme un bloc continu');
-  assert.equal(plateau.cases[39].nom, 'Vieux-Port');
-  assert.equal(plateau.cases[37].nom, 'Corniche Kennedy');
+  assert.equal(plateau.cases[39].nom, 'Fond Vert');
+  assert.equal(plateau.cases[37].nom, 'La Castellane');
 });
 
 test('les noms de cases sont uniques (hors Chance / Caisse)', () => {

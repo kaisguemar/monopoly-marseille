@@ -141,7 +141,7 @@ describe('hypothèques', () => {
 });
 
 describe('enchères', () => {
-  // Enchère sur Marché des Capucins, comme pour un bien repris par la banque.
+  // Enchère sur Malpassé, comme pour un bien repris par la banque.
   const ouvrir = (n = 3) => {
     const p = creerPartie(n);
     p.etat.encheresEnAttente.push(3);
@@ -262,7 +262,7 @@ describe('échanges', () => {
 });
 
 describe('faillite', () => {
-  // J1 doit un loyer énorme sur le Vieux-Port de J2 (hôtel : 2 000 €).
+  // J1 doit un loyer énorme sur Fond Vert de J2 (hôtel : 2 000 €).
   const ruine = (n = 2) => {
     const p = creerPartie(n);
     donner(p, 37, 1, 5);

@@ -1,8 +1,8 @@
 {
   "groupes": {
     "marron": {
-      "nom": "Belsunce – Noailles",
-      "nomCourt": "Noailles",
+      "nom": "Frais-Vallon – Malpassé",
+      "nomCourt": "Malpassé",
       "couleur": "#8B5A2B"
     },
     "bleu-ciel": {
@@ -36,8 +36,8 @@
       "couleur": "#2E9B4F"
     },
     "bleu-fonce": {
-      "nom": "Bord de mer",
-      "nomCourt": "Bord de mer",
+      "nom": "La Castellane – Fond Vert",
+      "nomCourt": "Fond Vert",
       "couleur": "#1D4E9E"
     }
   },
@@ -50,7 +50,7 @@
     {
       "index": 1,
       "type": "propriete",
-      "nom": "Cours Belsunce",
+      "nom": "Frais-Vallon",
       "groupe": "marron",
       "prix": 60,
       "loyers": [
@@ -72,7 +72,7 @@
     {
       "index": 3,
       "type": "propriete",
-      "nom": "Marché des Capucins",
+      "nom": "Malpassé",
       "groupe": "marron",
       "prix": 60,
       "loyers": [
@@ -169,7 +169,7 @@
     {
       "index": 11,
       "type": "propriete",
-      "nom": "Rue des Trois-Mages",
+      "nom": "Notre-Dame-du-Mont",
       "groupe": "violet",
       "prix": 140,
       "loyers": [
@@ -517,7 +517,7 @@
     {
       "index": 37,
       "type": "propriete",
-      "nom": "Corniche Kennedy",
+      "nom": "La Castellane",
       "groupe": "bleu-fonce",
       "prix": 350,
       "loyers": [
@@ -540,7 +540,7 @@
     {
       "index": 39,
       "type": "propriete",
-      "nom": "Vieux-Port",
+      "nom": "Fond Vert",
       "groupe": "bleu-fonce",
       "prix": 400,
       "loyers": [

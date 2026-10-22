@@ -292,14 +292,14 @@ describe('cartes', () => {
   };
 
   test('aller_a : avance avec salaire si passage par Départ', () => {
-    const p = surChance('chance-03', 22); // vers Rue des Trois-Mages (11)
+    const p = surChance('chance-03', 22); // vers Notre-Dame-du-Mont (11)
     assert.equal(p.etat.joueurs[0].position, 11);
     assert.equal(p.etat.joueurs[0].argent, 1700);
     assert.equal(p.etat.attente.type, 'achat');
   });
 
   test('aller_a : sans salaire si pas de passage', () => {
-    const p = surChance('chance-05', 36); // Vieux-Port
+    const p = surChance('chance-05', 36); // Fond Vert
     assert.equal(p.etat.joueurs[0].position, 39);
     assert.equal(p.etat.joueurs[0].argent, 1500);
   });
