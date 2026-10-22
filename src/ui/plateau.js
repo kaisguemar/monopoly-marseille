@@ -126,6 +126,7 @@ export class VuePlateau {
 
   majJournal(lignes) {
     const derniers = lignes.slice(-60);
+    this.journal.start = lignes.length - derniers.length + 1;
     this.journal.replaceChildren(...derniers.map((l) => el('li', {}, l)));
     this.journal.scrollTop = this.journal.scrollHeight;
   }

@@ -629,17 +629,25 @@ export class Partie {
     if (!p.maisons) refuser('Aucune construction à vendre ici.');
     const groupe = casesDuGroupe(this.plateau, c.groupe);
     if (p.maisons < Math.max(...groupe.map((i) => e.proprietes[i].maisons))) refuser('Vendez uniformément : les terrains les plus construits d\'abord.');
-    if (p.maisons === HOTEL) {
-      if (e.banque.maisons < 4) refuser('La banque n\'a pas 4 maisons pour remplacer l\'hôtel.');
+    const nom = this.joueur(joueur).nom;
+    if (p.maisons === HOTEL && e.banque.maisons < 4) {
+      // Pénurie de maisons : l'hôtel est revendu avec ses 4 maisons, le terrain redevient nu.
+      e.banque.hotels++;
+      p.maisons = 0;
+      this.recevoir(joueur, (HOTEL * c.prixMaison) / 2);
+      this.log(`Pénurie de maisons : ${nom} revend l'hôtel de ${c.nom} et tout ce qu'il contient pour ${(HOTEL * c.prixMaison) / 2} €.`);
+      return;
+    }
+    const hotel = p.maisons === HOTEL;
+    if (hotel) {
       e.banque.maisons -= 4;
       e.banque.hotels++;
     } else {
       e.banque.maisons++;
     }
-    const hotel = p.maisons === HOTEL;
     p.maisons--;
     this.recevoir(joueur, c.prixMaison / 2);
-    this.log(`${this.joueur(joueur).nom} revend ${hotel ? 'un hôtel' : 'une maison'} de ${c.nom} pour ${c.prixMaison / 2} €.`);
+    this.log(`${nom} revend ${hotel ? 'un hôtel' : 'une maison'} de ${c.nom} pour ${c.prixMaison / 2} €.`);
   }
 
   aHypothequer({ joueur, case: index }) {

@@ -14,6 +14,7 @@
 .tour-info { margin: 0 0 .5rem; font-weight: 700; color: var(--mer-fonce); }
 .actions { display: flex; flex-wrap: wrap; gap: .45rem; }
 .actions .btn { flex: 1 1 auto; }
+.reflexion { margin: 0; width: 100%; font-style: italic; color: var(--texte-doux); }
 
 .panneaux { display: flex; flex-direction: column; gap: .6rem; }
 .panneau-joueur { background: #fff; border-radius: var(--rayon); padding: .6rem .8rem; border-left: 6px solid; box-shadow: 0 2px 8px rgba(8, 63, 99, .1); }

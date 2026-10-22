@@ -84,7 +84,7 @@ describe('constructions', () => {
     assert.equal(p.etat.banque.maisons, 30);
   });
 
-  test("revente d'un hôtel : redevient 4 maisons", () => {
+  test("revente d'un hôtel : redevient 4 maisons (ou terrain nu en cas de pénurie)", () => {
     const p = avecQuartier();
     Object.assign(p.etat.proprietes[1], { maisons: 5 });
     Object.assign(p.etat.proprietes[3], { maisons: 5 });
@@ -92,8 +92,13 @@ describe('constructions', () => {
     ok(p, { type: 'vendreConstruction', joueur: 0, case: 1 });
     assert.equal(p.etat.proprietes[1].maisons, 4);
     assert.deepEqual(p.etat.banque, { maisons: 28, hotels: 11 });
+    // Pénurie de maisons : l'hôtel part avec ses 4 maisons.
     p.etat.banque.maisons = 2;
-    ko(p, { type: 'vendreConstruction', joueur: 0, case: 3 });
+    const avant = p.etat.joueurs[0].argent;
+    ok(p, { type: 'vendreConstruction', joueur: 0, case: 3 });
+    assert.equal(p.etat.proprietes[3].maisons, 0);
+    assert.equal(p.etat.joueurs[0].argent, avant + 125);
+    assert.deepEqual(p.etat.banque, { maisons: 2, hotels: 12 });
   });
 });
 

@@ -23,6 +23,8 @@ export class Controleur {
     this.vue = new VuePlateau(this.elPlateau, this.plateau, { surClicCase: (i) => this.montrerFiche(i) });
     afficherDes(this.vue.zoneDes, partie.etat.des);
     this.rafraichir();
+    // Laisse le temps aux extensions (ordinateur, sauvegarde) d'être prêtes.
+    setTimeout(() => this.apresAction(), 0);
   }
 
   construireDom(racine) {
@@ -59,6 +61,9 @@ export class Controleur {
       ? 'Partie terminée'
       : `Tour ${etat.tour}${etat.options.partieRapide ? ` / ${etat.options.toursMax}` : ''} — au tour de ${courant.nom}`;
     const boutons = [];
+    if (actif !== null && etat.joueurs[actif].ia) {
+      boutons.push(el('p', { class: 'reflexion' }, `🤖 ${etat.joueurs[actif].nom} réfléchit…`));
+    }
     if (actif !== null && !this.occupe && !etat.joueurs[actif].ia) {
       const possibles = this.partie.actionsPossibles();
       const bouton = (libelle, action, principal = false) => boutons.push(el('button', {
@@ -263,6 +268,7 @@ export class Controleur {
       contenu: el('p', { class: 'victoire' }, gagnant ? `🏆 ${gagnant.nom} remporte la partie !` : 'La partie est terminée.'),
       boutons: [{ libelle: 'Retour à l\'accueil', valeur: true, principal: true }]
     });
+    this.arreter?.();
     this.surQuitter?.(true);
   }
 
@@ -273,6 +279,9 @@ export class Controleur {
       fermable: true,
       boutons: [{ libelle: 'Abandonner', valeur: true, classe: 'btn-danger' }, { libelle: 'Continuer à jouer', valeur: false, principal: true }]
     });
-    if (ok) this.surQuitter?.(true);
+    if (ok) {
+      this.arreter?.();
+      this.surQuitter?.(true);
+    }
   }
 }

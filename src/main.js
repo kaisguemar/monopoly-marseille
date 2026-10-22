@@ -3,6 +3,7 @@ import { Partie } from './moteur/partie.js';
 import { validerPlateau, validerCartes } from './moteur/donnees.js';
 import { Controleur } from './ui/controleur.js';
 import './ui/gestion.js';
+import './ui/ordinateur.js';
 import { el } from './ui/utilitaires.js';
 import { PIONS } from './ui/pions.js';
 
@@ -25,10 +26,11 @@ function afficherAccueil(donnees) {
     el('h1', {}, 'Monopoly Marseille'),
     el('label', {}, 'Joueur 1 ', el('input', { name: 'j1', value: 'Marius' })),
     el('label', {}, 'Joueur 2 ', el('input', { name: 'j2', value: 'Fanny' })),
+    el('label', {}, el('input', { type: 'checkbox', name: 'ia2', checked: true }), ' Joueur 2 contrôlé par l\'ordinateur'),
     el('button', { class: 'btn btn-principal', type: 'submit' }, 'Nouvelle partie'));
   formulaire.addEventListener('submit', (ev) => {
     ev.preventDefault();
-    const joueurs = [formulaire.j1.value, formulaire.j2.value].map((nom, i) => ({ nom, pion: PIONS[i].id }));
+    const joueurs = [formulaire.j1.value, formulaire.j2.value].map((nom, i) => ({ nom, pion: PIONS[i].id, ia: i === 1 && formulaire.ia2.checked }));
     lancerPartie(donnees, Partie.nouvelle(donnees, { joueurs }));
   });
   app.replaceChildren(formulaire);
