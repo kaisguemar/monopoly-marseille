@@ -2,6 +2,7 @@
 import { el, texteSur, euros } from './utilitaires.js';
 import { svgPion, COULEURS_JOUEURS } from './pions.js';
 import { HOTEL } from '../moteur/regles.js';
+import { construction } from './vue3d.js';
 
 const ICONES = {
   depart: '⟵', chance: '?', communaute: '⚓', gare: '🚆', prison: '🔒',
@@ -96,7 +97,17 @@ export class VuePlateau {
       marque.title = proprio ? `Propriété de ${proprio.nom}` : '';
       noeud.classList.toggle('hypothequee', p.hypotheque);
       const cons = noeud.querySelector('.constructions');
-      if (cons) cons.textContent = p.maisons === HOTEL ? '🏨' : '🏠'.repeat(p.maisons);
+      // Maisons et hôtel aux couleurs du propriétaire (redessinés seulement s'ils changent).
+      const cle = p.maisons && proprio ? `${p.maisons}-${proprio.id}` : '';
+      if (cons && cons.dataset.cle !== cle) {
+        cons.dataset.cle = cle;
+        // Comme sur un vrai plateau, les constructions prennent la place du nom du quartier.
+        cons.parentElement.classList.toggle('construit', !!cle);
+        const couleur = proprio ? COULEURS_JOUEURS[proprio.id] : '#888';
+        cons.replaceChildren(...(p.maisons === HOTEL
+          ? [construction(true, couleur)]
+          : Array.from({ length: p.maisons }, () => construction(false, couleur))));
+      }
       const c = this.plateau.cases[index];
       let etiquette = etiquetteCase(c, this.plateau);
       if (proprio) etiquette += `, propriété de ${proprio.nom}`;

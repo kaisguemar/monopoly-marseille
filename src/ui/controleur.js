@@ -8,6 +8,7 @@
 import { el, euros, attendre, appliquerTheme } from './utilitaires.js';
 import { VuePlateau } from './plateau.js';
 import { animerDes, afficherDes } from './des.js';
+import { creerScene } from './vue3d.js';
 import { rendrePanneaux } from './panneaux.js';
 import { ficheCase } from './fiche.js';
 import { ouvrirModale, fermerModale, modaleEstOuverte } from './modale.js';
@@ -49,8 +50,7 @@ export class Controleur {
   construireDom(racine) {
     racine.replaceChildren(
       el('div', { class: 'jeu' },
-        el('div', { class: 'plateau-conteneur' },
-          this.elPlateau = el('div', { class: 'plateau' }),
+        this.elConteneur = el('div', { class: 'plateau-conteneur' },
           // Bulle « Untel boit 2 gorgées » du mode Pastis, fermée par le bouton « Santé ! ».
           this.elBoisson = el('div', { class: 'bulle-boisson', role: 'alertdialog', 'aria-labelledby': 'texte-boisson', hidden: true })),
         el('aside', { class: 'barre-laterale' },
@@ -63,6 +63,10 @@ export class Controleur {
       this.elNotif = el('div', { class: 'notification', role: 'status', 'aria-live': 'polite' }),
       // Annonce des événements du journal pour les lecteurs d'écran.
       this.elAnnonce = el('div', { class: 'visuellement-cache', 'aria-live': 'polite' }));
+    // Scène (vue à plat ou en 3D avec son décor) qui accueille le plateau.
+    const { plateau, bouton } = creerScene(this.elConteneur);
+    this.elPlateau = plateau;
+    this.elTour.after(bouton);
   }
 
   // ---------------------------------------------------------------------------

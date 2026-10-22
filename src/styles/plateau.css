@@ -45,7 +45,11 @@
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
   overflow: hidden; max-width: 100%; padding: 0 .2em; line-height: 1.05; text-align: center;
 }
-.case .constructions { font-size: 1.1em; line-height: 1; letter-spacing: -.15em; }
+.case .constructions {
+  display: flex; align-items: flex-end; justify-content: center; gap: .12em;
+  min-height: 1.1em; line-height: 1;
+  filter: drop-shadow(0 0 .06em #fff) drop-shadow(0 0 .06em #fff);
+}
 .case .contenu { display: flex; flex-direction: column; align-items: center; gap: .15em; min-width: 0; padding-top: .2em; }
 .case .nom { font-weight: 600; overflow-wrap: break-word; hyphens: auto; max-width: 100%; }
 .case .prix { font-size: .85em; color: var(--texte-doux); }
