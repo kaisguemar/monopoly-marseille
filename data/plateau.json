@@ -1,0 +1,558 @@
+{
+  "groupes": {
+    "marron": {
+      "nom": "Charbon Sud",
+      "nomCourt": "Charbon Sud",
+      "couleur": "#8B5A2B"
+    },
+    "bleu-ciel": {
+      "nom": "Charbon Nord",
+      "nomCourt": "Charbon Nord",
+      "couleur": "#7FC8E8"
+    },
+    "violet": {
+      "nom": "Troubadour",
+      "nomCourt": "Troubadour",
+      "couleur": "#C2459A"
+    },
+    "orange": {
+      "nom": "Centre-ville",
+      "nomCourt": "Centre",
+      "couleur": "#F08A24"
+    },
+    "rouge": {
+      "nom": "Endoume",
+      "nomCourt": "Endoume",
+      "couleur": "#D7312E"
+    },
+    "jaune": {
+      "nom": "Prado – Castellane",
+      "nomCourt": "Prado",
+      "couleur": "#F2D024"
+    },
+    "vert": {
+      "nom": "Roucas-Blanc – Périer",
+      "nomCourt": "Roucas",
+      "couleur": "#2E9B4F"
+    },
+    "bleu-fonce": {
+      "nom": "Bord de mer",
+      "nomCourt": "Bord de mer",
+      "couleur": "#1D4E9E"
+    }
+  },
+  "cases": [
+    {
+      "index": 0,
+      "type": "depart",
+      "nom": "Départ"
+    },
+    {
+      "index": 1,
+      "type": "propriete",
+      "nom": "Château Saint-Loup",
+      "groupe": "marron",
+      "prix": 60,
+      "loyers": [
+        2,
+        10,
+        30,
+        90,
+        160,
+        250
+      ],
+      "prixMaison": 50,
+      "hypotheque": 30
+    },
+    {
+      "index": 2,
+      "type": "communaute",
+      "nom": "Caisse de communauté"
+    },
+    {
+      "index": 3,
+      "type": "propriete",
+      "nom": "Benza",
+      "groupe": "marron",
+      "prix": 60,
+      "loyers": [
+        4,
+        20,
+        60,
+        180,
+        320,
+        450
+      ],
+      "prixMaison": 50,
+      "hypotheque": 30
+    },
+    {
+      "index": 4,
+      "type": "taxe",
+      "nom": "Station Total",
+      "montant": 200
+    },
+    {
+      "index": 5,
+      "type": "gare",
+      "nom": "Station Saint-Charles",
+      "prix": 200,
+      "loyers": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "hypotheque": 100
+    },
+    {
+      "index": 6,
+      "type": "propriete",
+      "nom": "Fond Vert",
+      "groupe": "bleu-ciel",
+      "prix": 100,
+      "loyers": [
+        6,
+        30,
+        90,
+        270,
+        400,
+        550
+      ],
+      "prixMaison": 50,
+      "hypotheque": 50
+    },
+    {
+      "index": 7,
+      "type": "chance",
+      "nom": "Chance"
+    },
+    {
+      "index": 8,
+      "type": "propriete",
+      "nom": "Frais-Vallon",
+      "groupe": "bleu-ciel",
+      "prix": 100,
+      "loyers": [
+        6,
+        30,
+        90,
+        270,
+        400,
+        550
+      ],
+      "prixMaison": 50,
+      "hypotheque": 50
+    },
+    {
+      "index": 9,
+      "type": "propriete",
+      "nom": "Malpassé",
+      "groupe": "bleu-ciel",
+      "prix": 120,
+      "loyers": [
+        8,
+        40,
+        100,
+        300,
+        450,
+        600
+      ],
+      "prixMaison": 50,
+      "hypotheque": 60
+    },
+    {
+      "index": 10,
+      "type": "prison",
+      "nom": "Les Baumettes / Simple visite"
+    },
+    {
+      "index": 11,
+      "type": "propriete",
+      "nom": "Notre-Dame-du-Mont",
+      "groupe": "violet",
+      "prix": 140,
+      "loyers": [
+        10,
+        50,
+        150,
+        450,
+        625,
+        750
+      ],
+      "prixMaison": 100,
+      "hypotheque": 70
+    },
+    {
+      "index": 12,
+      "type": "compagnie",
+      "nom": "Le Viaghji",
+      "prix": 150,
+      "multiplicateurs": [
+        4,
+        10
+      ],
+      "hypotheque": 75,
+      "description": "Bar"
+    },
+    {
+      "index": 13,
+      "type": "propriete",
+      "nom": "Cours Julien",
+      "groupe": "violet",
+      "prix": 140,
+      "loyers": [
+        10,
+        50,
+        150,
+        450,
+        625,
+        750
+      ],
+      "prixMaison": 100,
+      "hypotheque": 70
+    },
+    {
+      "index": 14,
+      "type": "propriete",
+      "nom": "La Plaine",
+      "groupe": "violet",
+      "prix": 160,
+      "loyers": [
+        12,
+        60,
+        180,
+        500,
+        700,
+        900
+      ],
+      "prixMaison": 100,
+      "hypotheque": 80
+    },
+    {
+      "index": 15,
+      "type": "gare",
+      "nom": "Station Dromel",
+      "prix": 200,
+      "loyers": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "hypotheque": 100
+    },
+    {
+      "index": 16,
+      "type": "propriete",
+      "nom": "Rue de Rome",
+      "groupe": "orange",
+      "prix": 180,
+      "loyers": [
+        14,
+        70,
+        200,
+        550,
+        750,
+        950
+      ],
+      "prixMaison": 100,
+      "hypotheque": 90
+    },
+    {
+      "index": 17,
+      "type": "communaute",
+      "nom": "Caisse de communauté"
+    },
+    {
+      "index": 18,
+      "type": "propriete",
+      "nom": "Rue Saint-Ferréol",
+      "groupe": "orange",
+      "prix": 180,
+      "loyers": [
+        14,
+        70,
+        200,
+        550,
+        750,
+        950
+      ],
+      "prixMaison": 100,
+      "hypotheque": 90
+    },
+    {
+      "index": 19,
+      "type": "propriete",
+      "nom": "La Canebière",
+      "groupe": "orange",
+      "prix": 200,
+      "loyers": [
+        16,
+        80,
+        220,
+        600,
+        800,
+        1000
+      ],
+      "prixMaison": 100,
+      "hypotheque": 100
+    },
+    {
+      "index": 20,
+      "type": "parc",
+      "nom": "Trottoir gratuit du Jarret"
+    },
+    {
+      "index": 21,
+      "type": "propriete",
+      "nom": "Rue d'Endoume",
+      "groupe": "rouge",
+      "prix": 220,
+      "loyers": [
+        18,
+        90,
+        250,
+        700,
+        875,
+        1050
+      ],
+      "prixMaison": 150,
+      "hypotheque": 110
+    },
+    {
+      "index": 22,
+      "type": "chance",
+      "nom": "Chance"
+    },
+    {
+      "index": 23,
+      "type": "propriete",
+      "nom": "Vallon des Auffes",
+      "groupe": "rouge",
+      "prix": 220,
+      "loyers": [
+        18,
+        90,
+        250,
+        700,
+        875,
+        1050
+      ],
+      "prixMaison": 150,
+      "hypotheque": 110
+    },
+    {
+      "index": 24,
+      "type": "propriete",
+      "nom": "Malmousque",
+      "groupe": "rouge",
+      "prix": 240,
+      "loyers": [
+        20,
+        100,
+        300,
+        750,
+        925,
+        1100
+      ],
+      "prixMaison": 150,
+      "hypotheque": 120
+    },
+    {
+      "index": 25,
+      "type": "gare",
+      "nom": "Station Joliette",
+      "prix": 200,
+      "loyers": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "hypotheque": 100
+    },
+    {
+      "index": 26,
+      "type": "propriete",
+      "nom": "Place Castellane",
+      "groupe": "jaune",
+      "prix": 260,
+      "loyers": [
+        22,
+        110,
+        330,
+        800,
+        975,
+        1150
+      ],
+      "prixMaison": 150,
+      "hypotheque": 130
+    },
+    {
+      "index": 27,
+      "type": "propriete",
+      "nom": "Avenue du Prado",
+      "groupe": "jaune",
+      "prix": 260,
+      "loyers": [
+        22,
+        110,
+        330,
+        800,
+        975,
+        1150
+      ],
+      "prixMaison": 150,
+      "hypotheque": 130
+    },
+    {
+      "index": 28,
+      "type": "compagnie",
+      "nom": "Chez Jeannot",
+      "prix": 150,
+      "multiplicateurs": [
+        4,
+        10
+      ],
+      "hypotheque": 75,
+      "description": "Restaurant"
+    },
+    {
+      "index": 29,
+      "type": "propriete",
+      "nom": "Parc Borély",
+      "groupe": "jaune",
+      "prix": 280,
+      "loyers": [
+        24,
+        120,
+        360,
+        850,
+        1025,
+        1200
+      ],
+      "prixMaison": 150,
+      "hypotheque": 140
+    },
+    {
+      "index": 30,
+      "type": "allez_prison",
+      "nom": "Allez aux Baumettes"
+    },
+    {
+      "index": 31,
+      "type": "propriete",
+      "nom": "Boulevard Périer",
+      "groupe": "vert",
+      "prix": 300,
+      "loyers": [
+        26,
+        130,
+        390,
+        900,
+        1100,
+        1275
+      ],
+      "prixMaison": 200,
+      "hypotheque": 150
+    },
+    {
+      "index": 32,
+      "type": "propriete",
+      "nom": "Chemin du Roucas-Blanc",
+      "groupe": "vert",
+      "prix": 300,
+      "loyers": [
+        26,
+        130,
+        390,
+        900,
+        1100,
+        1275
+      ],
+      "prixMaison": 200,
+      "hypotheque": 150
+    },
+    {
+      "index": 33,
+      "type": "communaute",
+      "nom": "Caisse de communauté"
+    },
+    {
+      "index": 34,
+      "type": "propriete",
+      "nom": "Rue Paradis",
+      "groupe": "vert",
+      "prix": 320,
+      "loyers": [
+        28,
+        150,
+        450,
+        1000,
+        1200,
+        1400
+      ],
+      "prixMaison": 200,
+      "hypotheque": 160
+    },
+    {
+      "index": 35,
+      "type": "gare",
+      "nom": "Station Rond-Point du Prado",
+      "prix": 200,
+      "loyers": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "hypotheque": 100
+    },
+    {
+      "index": 36,
+      "type": "chance",
+      "nom": "Chance"
+    },
+    {
+      "index": 37,
+      "type": "propriete",
+      "nom": "Corniche Kennedy",
+      "groupe": "bleu-fonce",
+      "prix": 350,
+      "loyers": [
+        35,
+        175,
+        500,
+        1100,
+        1300,
+        1500
+      ],
+      "prixMaison": 200,
+      "hypotheque": 175
+    },
+    {
+      "index": 38,
+      "type": "taxe",
+      "nom": "Tunnel Prado-Carénage",
+      "montant": 100
+    },
+    {
+      "index": 39,
+      "type": "propriete",
+      "nom": "Vieux-Port",
+      "groupe": "bleu-fonce",
+      "prix": 400,
+      "loyers": [
+        50,
+        200,
+        600,
+        1400,
+        1700,
+        2000
+      ],
+      "prixMaison": 200,
+      "hypotheque": 200
+    }
+  ]
+}

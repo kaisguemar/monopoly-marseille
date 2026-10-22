@@ -1,0 +1,194 @@
+/* Vue 3D : scène inclinée, décor autour du plateau, maisons et hôtels en volume. */
+
+.scene { position: relative; width: 100%; height: 100%; transition: transform .6s ease; }
+.scene .plateau { position: relative; }
+.scene-decor, .tranche { display: none; }
+.bouton-vue { display: flex; margin: 0 0 .5rem auto; }
+
+/* Maisons et hôtels, vue à plat : silhouette pleine à la couleur du propriétaire.
+   Ils prennent la place du nom du quartier dans le bandeau de couleur. */
+.bandeau.construit .bandeau-nom { display: none; }
+.bandeau .constructions:empty { display: none; }
+.batiment { position: relative; display: inline-block; flex: none; }
+.batiment .pan { display: none; }
+.maison {
+  width: 1.15em; height: 1.15em; background: var(--c);
+  clip-path: polygon(50% 0, 100% 45%, 100% 100%, 0 100%, 0 45%);
+}
+.hotel {
+  display: inline-grid; place-items: center;
+  width: 2em; height: 1.3em; border-radius: .15em;
+  background: var(--c); color: #fff;
+}
+.hotel::after { content: "H"; font-weight: 800; font-size: .85em; }
+
+/* ------------------------------------------------------------------------- */
+/* Vue 3D                                                                     */
+/* ------------------------------------------------------------------------- */
+
+.plateau-conteneur.vue-3d {
+  --incl: 50deg;
+  --epaisseur: 1.4cqi;
+  aspect-ratio: 1 / .84;
+  perspective: 240cqi;
+  perspective-origin: 50% 20%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #8ecdf0 0%, #cfe9f7 32%, #fdf3dc 46%, #fdf3dc 100%);
+  box-shadow: var(--ombre);
+}
+.vue-3d .scene {
+  height: auto; aspect-ratio: 1;
+  transform-style: preserve-3d;
+  transform: translateY(-3%) rotateX(var(--incl)) scale(.74);
+}
+.vue-3d .scene-decor { display: block; position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; }
+
+/* Toute la chaîne jusqu'aux pions et aux bâtiments reste en 3D. */
+.vue-3d .plateau,
+.vue-3d .case,
+.vue-3d .bandeau,
+.vue-3d .constructions,
+.vue-3d .batiment,
+.vue-3d .pions,
+.vue-3d .decor { transform-style: preserve-3d; }
+
+.vue-3d .plateau {
+  transform: translateZ(var(--epaisseur));
+  box-shadow: none;
+  border-radius: 3px;
+}
+.vue-3d .case { overflow: visible; }
+.vue-3d .constructions { filter: none; gap: .15em; font-size: 1.6em; }
+
+/* Tranche du plateau, côté joueur. */
+.vue-3d .tranche {
+  display: block; position: absolute; left: 0; top: 100%;
+  width: 100%; height: var(--epaisseur);
+  background: linear-gradient(180deg, #7a4e2a, #4f3018);
+  transform-origin: top; transform: rotateX(90deg);
+}
+
+/* Pions debout, face à la caméra. */
+.vue-3d .pion {
+  transform-origin: 50% 100%;
+  transform: rotateX(calc(-1 * var(--incl)));
+}
+.vue-3d .pion-actif { animation: sautille-3d 1.2s ease-in-out infinite; }
+@keyframes sautille-3d {
+  0%, 100% { transform: rotateX(calc(-1 * var(--incl))) scale(1.2); }
+  50% { transform: rotateX(calc(-1 * var(--incl))) translateY(-.5em) scale(1.2); }
+}
+
+/* Bâtiments en volume : chaque face est un élément positionné dans l'espace.
+   --l : longueur, --p : profondeur, --h : hauteur des murs, --H : hauteur des pignons. */
+.vue-3d .batiment {
+  --l: 1.25em; --p: 1.2em; --h: 1.25em; --H: 1.85em;
+  width: var(--l); height: var(--p);
+  background: none; clip-path: none; border-radius: 0;
+}
+.vue-3d .hotel { --l: 2.6em; --p: 1.4em; --h: 2em; --H: 2em; }
+.vue-3d .hotel::after { display: none; }
+.vue-3d .batiment .pan {
+  display: block; position: absolute; left: 0; top: 0;
+  background: var(--c);
+  /* Chaque face a sa lumière : façade éclairée, toit et côtés plus sombres. */
+  filter: brightness(var(--lum, 1));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .45);
+}
+.vue-3d .pan.avant, .vue-3d .pan.arriere {
+  width: var(--l); height: var(--h);
+  transform-origin: top; transform: rotateX(90deg);
+}
+.vue-3d .pan.avant { top: var(--p); --lum: 1.3; }
+.vue-3d .pan.arriere { --lum: .75; }
+.vue-3d .pan.gauche, .vue-3d .pan.droite {
+  width: var(--H); height: var(--p);
+  transform-origin: left; transform: rotateY(-90deg);
+}
+.vue-3d .pan.gauche { --lum: 1.05; }
+.vue-3d .pan.droite { left: var(--l); --lum: .8; }
+/* Pignons de la maison (murs latéraux en pentagone). */
+.vue-3d .maison .pan.gauche, .vue-3d .maison .pan.droite {
+  clip-path: polygon(0 0, 68% 0, 100% 50%, 68% 100%, 0 100%);
+}
+/* Toit à deux pans, plus sombre. */
+.vue-3d .pan.toit-avant, .vue-3d .pan.toit-arriere { width: var(--l); height: calc(var(--p) * .7072); --lum: .55; }
+.vue-3d .pan.toit-avant { top: calc(var(--p) * .2928); transform-origin: bottom; transform: translateZ(var(--h)) rotateX(-45deg); --lum: .7; }
+.vue-3d .pan.toit-arriere { transform-origin: top; transform: translateZ(var(--h)) rotateX(45deg); }
+/* Hôtel : fenêtres sur les façades et « H » sur le toit. */
+.vue-3d .hotel .pan.avant, .vue-3d .hotel .pan.arriere, .vue-3d .hotel .pan.gauche, .vue-3d .hotel .pan.droite {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 .2em, rgba(255, 255, 255, .55) .2em .4em, transparent .4em .55em),
+    var(--c);
+}
+.vue-3d .pan.dessus {
+  width: var(--l); height: var(--p);
+  display: grid; place-items: center;
+  transform: translateZ(var(--h));
+  color: #fff; font-weight: 800; line-height: 1;
+  --lum: 1.15;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Décor : la mer, la côte et quelques silhouettes marseillaises               */
+/* ------------------------------------------------------------------------- */
+
+.vue-3d .decor {
+  position: absolute;
+  inset: -40% -28% -16% -28%;
+  pointer-events: none;
+}
+.decor .sol {
+  position: absolute; inset: 0;
+  background:
+    repeating-radial-gradient(ellipse 14% 6% at 30% 70%, rgba(255, 255, 255, .0) 0 40%, rgba(255, 255, 255, .22) 44% 47%, rgba(255, 255, 255, 0) 51% 100%),
+    radial-gradient(ellipse at 50% 60%, #2a9bd0 0%, #1a7cb3 45%, #0d5a8c 100%);
+  border-radius: 6%;
+  animation: houle 9s linear infinite;
+}
+@keyframes houle { to { background-position: 14% 6%, 0 0; } }
+.decor .cote {
+  position: absolute; left: 0; right: 0; top: 0; height: 22%;
+  background:
+    radial-gradient(ellipse 30% 60% at 20% 100%, #d8c79a 0 60%, transparent 61%),
+    radial-gradient(ellipse 34% 70% at 70% 100%, #d8c79a 0 60%, transparent 61%),
+    linear-gradient(180deg, #7ea25a 0%, #a7b876 55%, #e6d7ac 100%);
+  border-radius: 6% 6% 40% 40% / 6% 6% 30% 30%;
+}
+.decor .accessoire {
+  position: absolute;
+  transform-origin: 50% 100%;
+  --debout: rotateX(calc(-1 * var(--incl)));
+  transform: var(--debout);
+}
+.accessoire svg { display: block; width: 100%; height: auto; }
+.decor .bonne-mere { left: 7%; bottom: 79%; width: 14%; }
+.decor .immeubles { left: 36%; bottom: 79.5%; width: 28%; }
+.decor .pins-1 { left: 25%; bottom: 80%; width: 9%; }
+.decor .pins-2 { left: 66%; bottom: 79%; width: 11%; }
+.decor .phare { left: 86%; bottom: 80%; width: 4.5%; }
+.decor .soleil-decor { left: 78%; bottom: 96%; width: 10%; }
+.decor .calanque-g { left: 1.5%; bottom: 44%; width: 15%; }
+.decor .calanque-d { left: 84%; bottom: 56%; width: 15%; transform: var(--debout) scaleX(-1); }
+.decor .bateau { animation: tangage 4s ease-in-out infinite; }
+.decor .bateau-1 { left: 4%; bottom: 20%; width: 10%; }
+.decor .bateau-2 { left: 86%; bottom: 33%; width: 9%; animation-delay: -1.5s; }
+.decor .bateau-3 { left: 87%; bottom: 10%; width: 8%; animation-delay: -2.7s; }
+@keyframes tangage {
+  0%, 100% { transform: var(--debout) translateY(0) rotate(-3deg); }
+  50% { transform: var(--debout) translateY(-.6cqi) rotate(3deg); }
+}
+
+/* Thème Pastis : ciel doré. */
+.theme-pastis .plateau-conteneur.vue-3d { background: linear-gradient(180deg, #ffd200 0%, #ffe680 30%, #fff4bf 46%, #fffbea 100%); }
+
+/* Petits écrans : un peu moins incliné pour garder les cases lisibles. */
+@media (max-width: 600px) {
+  .plateau-conteneur.vue-3d { --incl: 40deg; aspect-ratio: 1 / .9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene { transition: none; }
+  .decor .sol, .decor .bateau, .vue-3d .pion-actif { animation: none; }
+}

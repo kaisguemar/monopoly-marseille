@@ -1,0 +1,14 @@
+{
+  "name": "monopoly-marseille",
+  "version": "1.0.0",
+  "description": "Monopoly version Marseille, jouable dans le navigateur",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node serveur/serveur.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
