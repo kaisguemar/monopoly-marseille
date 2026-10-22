@@ -3,7 +3,8 @@ import { el, euros, texteSur } from './utilitaires.js';
 import { svgPion, COULEURS_JOUEURS, pionParId } from './pions.js';
 import { proprietesDe, HOTEL } from '../moteur/regles.js';
 
-export function rendrePanneaux(racine, partie, { surClicCase }) {
+// En ligne, `salon` donne la présence de chaque joueur et `moi` la place de cet écran.
+export function rendrePanneaux(racine, partie, { surClicCase, moi = null, salon = null, surRemplacer }) {
   const { etat, plateau } = partie;
   const actif = partie.joueurActif();
   racine.replaceChildren(...etat.joueurs.map((j) => {
@@ -34,9 +35,14 @@ export function rendrePanneaux(racine, partie, { surClicCase }) {
         })));
     });
     const statut = [];
+    const place = salon?.places[j.id];
     if (j.faillite) statut.push('En faillite');
-    else if (j.enPrison) statut.push("Aux Baumettes");
-    if (j.ia) statut.push('Ordinateur');
+    else if (j.enPrison) statut.push('Aux Baumettes');
+    if (place?.abandon) statut.push('A quitté la partie (ordinateur)');
+    else if (place?.remplaceParIA) statut.push("Déconnecté — l'ordinateur joue à sa place");
+    else if (j.ia) statut.push('Ordinateur');
+    else if (place && !place.connecte) statut.push('🔌 Déconnecté');
+    const peutRemplacer = place && !j.ia && !place.connecte && !j.faillite && !partie.etat.terminee && surRemplacer;
     return el('section', {
       class: `panneau-joueur ${j.id === etat.courant ? 'courant' : ''} ${j.id === actif ? 'actif' : ''} ${j.faillite ? 'faillite' : ''}`,
       style: { borderColor: COULEURS_JOUEURS[j.id] },
@@ -44,9 +50,10 @@ export function rendrePanneaux(racine, partie, { surClicCase }) {
     },
       el('header', {},
         el('span', { class: 'avatar', style: { borderColor: COULEURS_JOUEURS[j.id] }, html: svgPion(j.pion, 32), title: pionParId(j.pion).nom }),
-        el('span', { class: 'nom-joueur' }, j.nom),
+        el('span', { class: 'nom-joueur' }, j.nom, j.id === moi ? el('small', {}, ' (vous)') : null),
         el('span', { class: 'argent' }, euros(j.argent))),
       statut.length ? el('p', { class: 'statut' }, statut.join(' · ')) : null,
+      peutRemplacer ? el('button', { type: 'button', class: 'btn btn-petit', onclick: () => surRemplacer(j.id) }, "🤖 Faire jouer l'ordinateur à sa place") : null,
       j.cartesSortie.length ? el('p', { class: 'cartes-speciales' }, `🎟️ ${j.cartesSortie.length} carte(s) « sortie des Baumettes »`) : null,
       listes.length ? el('ul', { class: 'proprietes-joueur' }, listes) : el('p', { class: 'vide' }, 'Aucune propriété'));
   }));

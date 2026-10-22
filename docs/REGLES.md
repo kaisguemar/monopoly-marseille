@@ -1,6 +1,6 @@
 # Règles du jeu — Monopoly Marseille
 
-Monopoly Marseille reprend les règles officielles du Monopoly français. Seuls les noms changent : on achète des rues, places et quartiers de Marseille, la prison s'appelle le Château d'If et le Parc gratuit se trouve plage des Catalans.
+Monopoly Marseille reprend les règles officielles du Monopoly français. Seuls les noms changent : on achète des rues, places et quartiers de Marseille, la prison s'appelle Les Baumettes et le Parc gratuit devient le Trottoir gratuit du Jarret.
 
 ## But du jeu
 
@@ -17,7 +17,7 @@ Monopoly Marseille reprend les règles officielles du Monopoly français. Seuls 
 
 1. **Lancez les deux dés** et avancez du total.
 2. Appliquez l'effet de la case d'arrivée (voir plus bas).
-3. Si vous avez fait un **double**, rejouez. Au **troisième double d'affilée**, vous allez directement au Château d'If sans jouer ce troisième déplacement.
+3. Si vous avez fait un **double**, rejouez. Au **troisième double d'affilée**, vous allez directement aux Baumettes sans jouer ce troisième déplacement.
 4. Avant ou après avoir lancé les dés, vous pouvez construire, hypothéquer, lever une hypothèque ou proposer un échange.
 5. Terminez votre tour.
 
@@ -27,9 +27,9 @@ Chaque passage par la case Départ (ou arrêt dessus) rapporte **200 €**.
 
 ### Propriétés (terrains, gares, compagnies)
 
-- **Libre** : vous pouvez l'acheter au prix indiqué. Si vous refusez, elle est **mise aux enchères** entre tous les joueurs, vous compris.
+- **Libre** : vous pouvez l'acheter au prix indiqué. Si vous refusez, elle reste simplement à la banque (pas d'enchère) : le prochain joueur qui s'y arrêtera pourra l'acheter.
 - **À vous** : rien ne se passe.
-- **À un adversaire** : vous lui payez un loyer, sauf si la propriété est hypothéquée. Le propriétaire touche le loyer même s'il est au Château d'If.
+- **À un adversaire** : vous lui payez un loyer, sauf si la propriété est hypothéquée. Le propriétaire touche le loyer même s'il est aux Baumettes.
 
 ### Loyers
 
@@ -39,19 +39,19 @@ Chaque passage par la case Départ (ou arrêt dessus) rapporte **200 €**.
 | Terrain nu, quartier complet | loyer de base × 2 |
 | Terrain avec 1 à 4 maisons ou un hôtel | loyer indiqué sur la fiche |
 | Gares | 25 €, 50 €, 100 € ou 200 € selon le nombre de gares possédées (1 à 4) |
-| Compagnies | 4 × le total des dés avec une compagnie, 10 × avec les deux |
+| Compagnies (Le Viaghji, Chez Jeannot) | 4 × le total des dés avec un établissement, 10 × avec les deux |
 
 ### Autres cases
 
-- **Impôt sur la sardine** : payez 200 €. **Taxe bouillabaisse** : payez 100 €.
-- **Chance** / **Caisse de communauté** : tirez la carte du dessus et appliquez-la. Elle retourne sous la pioche, sauf la carte « sortie du Château d'If » que vous pouvez garder, utiliser ou échanger.
-- **Château d'If / Simple visite** : s'y arrêter normalement ne fait rien.
-- **Allez au Château d'If** : vous y allez directement, sans passer par Départ.
-- **Parc gratuit (plage des Catalans)** : rien ne se passe (sauf règle de la maison « cagnotte »).
+- **Station Total** : payez 200 € (le plein). **Tunnel Prado-Carénage** : payez 100 € (le péage).
+- **Chance** / **Caisse de communauté** : tirez la carte du dessus et appliquez-la. Elle retourne sous la pioche, sauf la carte « sortie des Baumettes » que vous pouvez garder, utiliser ou échanger.
+- **Les Baumettes / Simple visite** : s'y arrêter normalement ne fait rien.
+- **Allez aux Baumettes** : vous y allez directement, sans passer par Départ.
+- **Trottoir gratuit du Jarret** (le Parc gratuit) : rien ne se passe (sauf règle de la maison « cagnotte »).
 
-## Le Château d'If (prison)
+## Les Baumettes (prison)
 
-On y va en tombant sur « Allez au Château d'If », en tirant la carte correspondante ou en faisant trois doubles d'affilée. Pour en sortir :
+On y va en tombant sur « Allez aux Baumettes », en tirant la carte correspondante ou en faisant trois doubles d'affilée. Pour en sortir :
 
 - **payer 50 €** avant de lancer les dés, puis jouer normalement ;
 - **utiliser une carte « sortie »**, puis jouer normalement ;
@@ -74,11 +74,11 @@ On y va en tombant sur « Allez au Château d'If », en tirant la carte correspo
 
 ## Enchères
 
-Quand un joueur refuse d'acheter une propriété (ou quand la banque récupère les biens d'un joueur en faillite), elle est mise aux enchères. Chacun à son tour surenchérit ou passe ; celui qui passe quitte l'enchère. Le dernier enchérisseur emporte la propriété au prix proposé. Si personne n'enchérit, elle reste à la banque.
+Il n'y a **pas d'enchère quand un joueur refuse d'acheter** une propriété. Les enchères n'ont lieu que lorsque la banque récupère les biens d'un joueur en faillite : chaque propriété est alors mise aux enchères. Chacun à son tour surenchérit ou passe ; celui qui passe quitte l'enchère. Le dernier enchérisseur emporte la propriété au prix proposé. Si personne n'enchérit, elle reste à la banque.
 
 ## Échanges
 
-Le joueur qui a la main peut proposer un échange à n'importe quel autre joueur : propriétés, argent et cartes « sortie du Château d'If ». L'autre joueur accepte ou refuse. On ne peut pas échanger un terrain dont le quartier porte des constructions : il faut d'abord les revendre. Une propriété hypothéquée reste hypothéquée chez son nouveau propriétaire.
+Le joueur qui a la main peut proposer un échange à n'importe quel autre joueur : propriétés, argent et cartes « sortie des Baumettes ». L'autre joueur accepte ou refuse. On ne peut pas échanger un terrain dont le quartier porte des constructions : il faut d'abord les revendre. Une propriété hypothéquée reste hypothéquée chez son nouveau propriétaire.
 
 ## Dettes et faillite
 
@@ -91,10 +91,20 @@ Si vous devez plus que ce que vous avez, vous devez réunir la somme en revendan
 
 À cocher sur l'écran d'accueil :
 
-- **Cagnotte du Parc gratuit** : les taxes, les amendes et réparations des cartes, et les 50 € de sortie de prison sont déposés au centre du plateau ; le joueur qui s'arrête sur le Parc gratuit ramasse tout.
+- **Cagnotte du Trottoir gratuit** : les taxes, les amendes et réparations des cartes, et les 50 € de sortie de prison s'accumulent ; le joueur qui s'arrête sur le Trottoir gratuit du Jarret ramasse tout.
 - **Double salaire sur Départ** : s'arrêter pile sur Départ rapporte 400 € au lieu de 200 €.
 - **Partie rapide** : la partie s'arrête à la fin du nombre de tours choisi ; le plus gros **patrimoine** l'emporte (argent + prix des propriétés, moins la valeur hypothécaire pour celles qui sont hypothéquées + constructions au prix d'achat).
 
 ## Les cartes
 
-Les cartes reprennent les effets du jeu original, dans une ambiance marseillaise : avancer jusqu'à une case (et toucher 200 € en passant par Départ), reculer de trois cases, aller au Château d'If, en sortir, payer ou recevoir de l'argent, payer des réparations par maison et par hôtel, recevoir 10 € de chaque joueur pour son anniversaire, ou choisir entre une amende de 10 € et une carte Chance.
+Les cartes reprennent les effets du jeu original, dans une ambiance marseillaise : avancer jusqu'à une case (et toucher 200 € en passant par Départ), reculer de trois cases, aller aux Baumettes, en sortir, payer ou recevoir de l'argent, payer des réparations par maison et par hôtel, recevoir 10 € de chaque joueur pour son anniversaire, ou choisir entre une amende de 10 € et une carte Chance.
+
+## Jouer en ligne
+
+Chaque joueur peut jouer depuis son propre appareil :
+
+1. Un joueur **crée un salon** depuis l'écran d'accueil et partage son **code** (ou le lien d'invitation).
+2. Les autres **rejoignent** avec ce code. L'hôte peut ajouter des ordinateurs, régler les règles de la maison puis lancer la partie.
+3. Pendant la partie, seul le joueur dont c'est le tour peut agir ; tout le monde voit les dés, les déplacements et les cartes en direct.
+
+**Déconnexion** : si votre connexion coupe ou si vous fermez la page par erreur, revenez simplement sur le jeu : vous retrouvez automatiquement votre place (sur un autre appareil, rejoignez le salon avec le même nom). Pendant votre absence, la partie attend ; si c'est votre tour et que vous ne revenez pas au bout d'une minute et demie, l'ordinateur joue à votre place jusqu'à votre retour. Les autres joueurs peuvent aussi confier un joueur déconnecté à l'ordinateur. « Quitter la partie en ligne » laisse définitivement votre place à l'ordinateur.

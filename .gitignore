@@ -3,3 +3,5 @@ dist/
 .DS_Store
 *.log
 .env
+serveur/salons.json
+serveur/salons.json.tmp

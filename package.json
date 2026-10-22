@@ -5,7 +5,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "npx --yes serve -l 8080 .",
+    "start": "node serveur/serveur.js",
     "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

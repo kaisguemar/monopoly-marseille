@@ -32,5 +32,6 @@ Object.assign(Controleur.prototype, {
   arreter() {
     this.arrete = true;
     clearTimeout(this.minuteurIA);
+    this.reseau?.client.fermer();
   }
 });

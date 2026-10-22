@@ -1,6 +1,10 @@
 // Contrôleur de l'interface : relie le moteur (Partie) à l'affichage.
 // Chaque action passe par `agir()`, qui exécute l'action dans le moteur,
 // rejoue les événements produits (dés, déplacements, cartes) puis redessine.
+//
+// En ligne (option `reseau`), le serveur fait autorité : `agir()` lui envoie l'action,
+// et chaque mise à jour reçue (`recevoirMessage()`) remplace l'état local puis est animée.
+// Seul le joueur de cet écran (`moi`) peut alors agir.
 import { el, euros, attendre } from './utilitaires.js';
 import { VuePlateau } from './plateau.js';
 import { animerDes, afficherDes } from './des.js';
@@ -8,12 +12,13 @@ import { rendrePanneaux } from './panneaux.js';
 import { ficheCase } from './fiche.js';
 import { ouvrirModale, fermerModale, modaleEstOuverte } from './modale.js';
 import { AMENDE_PRISON } from '../moteur/regles.js';
+import { Partie } from '../moteur/partie.js';
 
 const DUREE_PAS = 140;
 const ACTIONS_GESTION = ['construire', 'vendreConstruction', 'hypothequer', 'leverHypotheque'];
 
 export class Controleur {
-  constructor(partie, racine, { surQuitter, surFinDeTour, facteurAnimation = 1 } = {}) {
+  constructor(partie, racine, { surQuitter, surFinDeTour, facteurAnimation = 1, reseau = null } = {}) {
     this.partie = partie;
     this.plateau = partie.plateau;
     this.occupe = false;
@@ -21,6 +26,15 @@ export class Controleur {
     this.surQuitter = surQuitter;
     this.surFinDeTour = surFinDeTour;
     this.facteur = facteurAnimation;
+    // Mode en ligne : { client, moi, salon, version }.
+    this.reseau = reseau;
+    this.moi = reseau?.moi ?? null;
+    this.salon = reseau?.salon ?? null;
+    this.version = reseau?.version ?? 0;
+    this.connexion = 'connecte';
+    this.fileMessages = Promise.resolve();
+    this.attentesVersion = [];
+    this.envoi = false;
     this.construireDom(racine);
     this.vue = new VuePlateau(this.elPlateau, this.plateau, { surClicCase: (i) => this.montrerFiche(i) });
     afficherDes(this.vue.zoneDes, partie.etat.des);
@@ -35,6 +49,8 @@ export class Controleur {
         el('div', { class: 'plateau-conteneur' }, this.elPlateau = el('div', { class: 'plateau' })),
         el('aside', { class: 'barre-laterale' },
           el('section', { class: 'commandes', 'aria-label': 'Actions du tour' },
+            this.elConnexion = el('p', { class: 'alerte bandeau-connexion', role: 'status', hidden: true }),
+            this.reseau ? el('p', { class: 'info-salon' }, `Partie en ligne — salon ${this.salon.code}`) : null,
             this.elTour = el('p', { class: 'tour-info', 'aria-live': 'polite' }),
             this.elActions = el('div', { class: 'actions' })),
           this.elPanneaux = el('div', { class: 'panneaux' }))),
@@ -53,7 +69,12 @@ export class Controleur {
     this.vue.majPions(etat, this.positions);
     this.vue.majCagnotte(etat);
     this.vue.majJournal(etat.journal);
-    rendrePanneaux(this.elPanneaux, this.partie, { surClicCase: (i) => this.montrerFiche(i) });
+    rendrePanneaux(this.elPanneaux, this.partie, {
+      surClicCase: (i) => this.montrerFiche(i),
+      moi: this.moi,
+      salon: this.salon,
+      surRemplacer: (id) => this.remplacerParIA(id)
+    });
     this.rendreActions();
   }
 
@@ -67,8 +88,11 @@ export class Controleur {
     const boutons = [];
     if (actif !== null && etat.joueurs[actif].ia) {
       boutons.push(el('p', { class: 'reflexion' }, `🤖 ${etat.joueurs[actif].nom} réfléchit…`));
+    } else if (actif !== null && !this.estLocal(actif)) {
+      const absent = this.salon && !this.salon.places[actif]?.connecte;
+      boutons.push(el('p', { class: 'reflexion' }, `⏳ En attente de ${etat.joueurs[actif].nom}…${absent ? ' (déconnecté, en attente de son retour)' : ''}`));
     }
-    if (actif !== null && !this.occupe && !etat.joueurs[actif].ia) {
+    if (actif !== null && !this.occupe && !this.envoi && this.estLocal(actif)) {
       const possibles = this.partie.actionsPossibles();
       const bouton = (libelle, action, principal = false) => boutons.push(el('button', {
         type: 'button', class: `btn ${principal ? 'btn-principal' : ''}`, onclick: action
@@ -81,7 +105,7 @@ export class Controleur {
       for (const b of this.boutonsGestion(possibles)) boutons.push(b);
     }
     if (this.surQuitter) {
-      boutons.push(el('button', { type: 'button', class: 'btn btn-discret', onclick: () => this.quitter() }, 'Abandonner la partie'));
+      boutons.push(el('button', { type: 'button', class: 'btn btn-discret', onclick: () => this.quitter() }, this.reseau ? 'Quitter la partie en ligne' : 'Abandonner la partie'));
     }
     this.elActions.replaceChildren(...boutons);
     // Navigation au clavier : le bouton principal reçoit le focus quand c'est à un humain de jouer.
@@ -89,6 +113,12 @@ export class Controleur {
     if (principal && !modaleEstOuverte() && (document.activeElement === document.body || !document.contains(document.activeElement))) {
       principal.focus({ preventScroll: true });
     }
+  }
+
+  // Le joueur `id` est-il contrôlé depuis cet écran ?
+  estLocal(id) {
+    if (this.reseau) return id === this.moi;
+    return !this.partie.etat.joueurs[id].ia;
   }
 
   // Boutons de gestion des biens (complétés par la phase « gestion avancée »).
@@ -116,6 +146,7 @@ export class Controleur {
 
   // Exécute une action pour le joueur actif et rejoue ses effets.
   async agir(action) {
+    if (this.reseau) return this.agirEnLigne(action);
     if (this.occupe) return false;
     this.occupe = true;
     const joueur = action.joueur ?? this.partie.joueurActif();
@@ -138,6 +169,96 @@ export class Controleur {
     this.rafraichir();
     this.apresAction(action);
     return true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Mode en ligne
+  // ---------------------------------------------------------------------------
+
+  async agirEnLigne(action) {
+    if (this.occupe || this.envoi) return false;
+    this.envoi = true;
+    this.rendreActions();
+    const resultat = await this.reseau.client.envoyerAction(action);
+    this.envoi = false;
+    // La mise à jour du serveur arrive parfois avant la réponse à la requête :
+    // on redessine les boutons, masqués pendant l'envoi.
+    if (!this.occupe) this.rendreActions();
+    if (!resultat.ok) {
+      this.notifier(resultat.erreur);
+      return false;
+    }
+    // L'action est validée : on attend que sa mise à jour soit reçue et animée.
+    await this.attendreVersion(resultat.version);
+    return true;
+  }
+
+  attendreVersion(version) {
+    if (this.version >= version) return Promise.resolve();
+    return new Promise((resoudre) => {
+      const attente = { version, resoudre };
+      this.attentesVersion.push(attente);
+      // Filet de sécurité : la reconnexion du flux renverra de toute façon l'état complet.
+      setTimeout(() => {
+        this.attentesVersion = this.attentesVersion.filter((a) => a !== attente);
+        resoudre();
+      }, 8000);
+    });
+  }
+
+  // Les messages du serveur sont traités un par un, au rythme des animations.
+  recevoirMessage(message) {
+    this.fileMessages = this.fileMessages
+      .then(() => this.traiterMessage(message))
+      .catch((err) => console.error('Mise à jour impossible :', err));
+  }
+
+  async traiterMessage(m) {
+    if (this.arrete || (m.version <= this.version && m.changement !== 'initial')) return;
+    this.salon = m.salon;
+    this.moi = m.moi;
+    const avant = Object.fromEntries(this.partie.etat.joueurs.map((j) => [j.id, j.position]));
+    this.partie = new Partie({ plateau: this.plateau, cartes: this.partie.cartes }, m.etat);
+    this.version = m.version;
+    if (m.changement === 'partie' && m.evenements.length) {
+      this.positions = avant;
+      this.occupe = true;
+      this.rendreActions();
+      await this.jouerEvenements(m.evenements);
+      this.annoncer(m.evenements);
+      this.positions = {};
+      this.occupe = false;
+    }
+    if (m.changement === 'initial') afficherDes(this.vue.zoneDes, m.etat.des);
+    this.rafraichir();
+    const prets = this.attentesVersion.filter((a) => a.version <= this.version);
+    this.attentesVersion = this.attentesVersion.filter((a) => a.version > this.version);
+    prets.forEach((a) => a.resoudre());
+    if (m.changement !== 'presence' && m.changement !== 'salon') this.apresAction(m.action);
+  }
+
+  // État de la connexion au serveur : 'connecte', 'reconnexion', 'introuvable' ou 'refuse'.
+  async etatConnexion(etat) {
+    this.connexion = etat;
+    this.elConnexion.hidden = etat === 'connecte';
+    this.elConnexion.textContent = 'Connexion au serveur perdue… reconnexion en cours. Votre place vous attend.';
+    if (etat === 'introuvable' || etat === 'refuse') {
+      this.arreter();
+      await ouvrirModale({
+        titre: 'Partie indisponible',
+        contenu: etat === 'introuvable' ? 'Cette partie n\'existe plus sur le serveur.' : 'Votre place dans cette partie n\'existe plus.',
+        boutons: [{ libelle: 'Retour à l\'accueil', valeur: true, principal: true }]
+      });
+      this.surQuitter?.(true);
+    }
+  }
+
+  async remplacerParIA(id) {
+    try {
+      await this.reseau.client.envoyer('remplacer', { place: id });
+    } catch (err) {
+      this.notifier(err.message);
+    }
   }
 
   annoncer(evenements) {
@@ -187,7 +308,7 @@ export class Controleur {
     const contenu = el('div', { class: `carte-tiree carte-${ev.pioche}` },
       el('p', { class: 'carte-joueur' }, `${this.partie.etat.joueurs[ev.joueur].nom} tire une carte :`),
       el('p', { class: 'carte-texte' }, ev.carte.texte));
-    if (this.partie.etat.joueurs[ev.joueur].ia) {
+    if (!this.estLocal(ev.joueur)) {
       const promesse = ouvrirModale({ titre, contenu, boutons: [{ libelle: 'OK', valeur: true, principal: true }] });
       await Promise.race([promesse, attendre(2200 * this.facteur)]);
       if (modaleEstOuverte()) fermerModale();
@@ -204,12 +325,13 @@ export class Controleur {
       return;
     }
     const actif = this.partie.joueurActif();
-    if (etat.joueurs[actif].ia) {
+    if (!this.reseau && etat.joueurs[actif].ia) {
       this.jouerOrdinateur?.();
       return;
     }
+    if (!this.estLocal(actif)) return;
     // Après une action de gestion, c'est la fenêtre de gestion qui se rouvre.
-    if (ACTIONS_GESTION.includes(action?.type)) return;
+    if (ACTIONS_GESTION.includes(action?.type) && (!this.reseau || action.joueur === this.moi)) return;
     if (etat.attente || etat.dettes.length || etat.echange) this.demanderDecision();
   }
 
@@ -218,7 +340,7 @@ export class Controleur {
     const { etat, plateau } = this.partie;
     const actif = this.partie.joueurActif();
     const j = etat.joueurs[actif];
-    if (j.ia || this.occupe) return;
+    if (!this.estLocal(actif) || this.occupe) return;
     const a = etat.attente;
     if (etat.dettes.length) return this.demanderDette();
     if (a?.type === 'achat') {
@@ -291,12 +413,15 @@ export class Controleur {
 
   async quitter() {
     const ok = await ouvrirModale({
-      titre: 'Abandonner la partie ?',
-      contenu: 'La partie en cours et sa sauvegarde seront effacées.',
+      titre: this.reseau ? 'Quitter la partie en ligne ?' : 'Abandonner la partie ?',
+      contenu: this.reseau
+        ? 'L\'ordinateur prendra définitivement votre place. (Si vous fermez simplement la page, vous pourrez revenir.)'
+        : 'La partie en cours et sa sauvegarde seront effacées.',
       fermable: true,
       boutons: [{ libelle: 'Abandonner', valeur: true, classe: 'btn-danger' }, { libelle: 'Continuer à jouer', valeur: false, principal: true }]
     });
     if (ok) {
+      if (this.reseau) await this.reseau.client.envoyer('quitter').catch(() => {});
       this.arreter?.();
       this.surQuitter?.(true);
     }
