@@ -1,5 +1,6 @@
 // Tour des joueurs ordinateur : leurs décisions sont temporisées pour que les humains puissent suivre.
 import { Controleur } from './controleur.js';
+import { modaleEstOuverte } from './modale.js';
 import { deciderAction, actionsDeSecours } from '../moteur/ia.js';
 
 export const VITESSES_IA = { lente: 1200, normale: 700, rapide: 250 };
@@ -14,7 +15,8 @@ Object.assign(Controleur.prototype, {
 
   async actionOrdinateur() {
     if (this.arrete) return;
-    if (this.occupe) {
+    // Attend que l'humain ait fermé sa fenêtre (fiche consultée, confirmation…).
+    if (this.occupe || modaleEstOuverte()) {
       this.jouerOrdinateur();
       return;
     }

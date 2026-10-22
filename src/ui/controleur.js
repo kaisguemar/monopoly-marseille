@@ -13,12 +13,14 @@ const DUREE_PAS = 140;
 const ACTIONS_GESTION = ['construire', 'vendreConstruction', 'hypothequer', 'leverHypotheque'];
 
 export class Controleur {
-  constructor(partie, racine, { surQuitter } = {}) {
+  constructor(partie, racine, { surQuitter, surFinDeTour, facteurAnimation = 1 } = {}) {
     this.partie = partie;
     this.plateau = partie.plateau;
     this.occupe = false;
     this.positions = {};
     this.surQuitter = surQuitter;
+    this.surFinDeTour = surFinDeTour;
+    this.facteur = facteurAnimation;
     this.construireDom(racine);
     this.vue = new VuePlateau(this.elPlateau, this.plateau, { surClicCase: (i) => this.montrerFiche(i) });
     afficherDes(this.vue.zoneDes, partie.etat.des);
@@ -36,7 +38,9 @@ export class Controleur {
             this.elTour = el('p', { class: 'tour-info', 'aria-live': 'polite' }),
             this.elActions = el('div', { class: 'actions' })),
           this.elPanneaux = el('div', { class: 'panneaux' }))),
-      this.elNotif = el('div', { class: 'notification', role: 'status', 'aria-live': 'polite' }));
+      this.elNotif = el('div', { class: 'notification', role: 'status', 'aria-live': 'polite' }),
+      // Annonce des événements du journal pour les lecteurs d'écran.
+      this.elAnnonce = el('div', { class: 'visuellement-cache', 'aria-live': 'polite' }));
   }
 
   // ---------------------------------------------------------------------------
@@ -80,6 +84,11 @@ export class Controleur {
       boutons.push(el('button', { type: 'button', class: 'btn btn-discret', onclick: () => this.quitter() }, 'Abandonner la partie'));
     }
     this.elActions.replaceChildren(...boutons);
+    // Navigation au clavier : le bouton principal reçoit le focus quand c'est à un humain de jouer.
+    const principal = this.elActions.querySelector('.btn-principal');
+    if (principal && !modaleEstOuverte() && (document.activeElement === document.body || !document.contains(document.activeElement))) {
+      principal.focus({ preventScroll: true });
+    }
   }
 
   // Boutons de gestion des biens (complétés par la phase « gestion avancée »).
@@ -120,12 +129,20 @@ export class Controleur {
     }
     this.positions = avant;
     this.rendreActions();
-    await this.jouerEvenements(this.partie.extraireEvenements());
+    const evenements = this.partie.extraireEvenements();
+    await this.jouerEvenements(evenements);
+    this.annoncer(evenements);
+    if (evenements.some((e) => e.type === 'tour')) this.surFinDeTour?.();
     this.positions = {};
     this.occupe = false;
     this.rafraichir();
     this.apresAction(action);
     return true;
+  }
+
+  annoncer(evenements) {
+    const lignes = evenements.filter((e) => e.type === 'journal').map((e) => e.message);
+    if (lignes.length) this.elAnnonce.textContent = lignes.slice(-3).join(' ');
   }
 
   async jouerEvenements(evenements) {
@@ -135,20 +152,20 @@ export class Controleur {
     for (const ev of evenements) {
       switch (ev.type) {
         case 'des':
-          await animerDes(this.vue.zoneDes, ev.des);
+          await animerDes(this.vue.zoneDes, ev.des, 650 * this.facteur);
           break;
         case 'deplacement':
           for (const pos of ev.chemin) {
             this.positions[ev.joueur] = pos;
             this.vue.majPions(etat, this.positions);
-            await attendre(DUREE_PAS);
+            await attendre(DUREE_PAS * this.facteur);
           }
           break;
         case 'teleportation':
-          await attendre(250);
+          await attendre(250 * this.facteur);
           this.positions[ev.joueur] = ev.vers;
           this.vue.majPions(etat, this.positions);
-          await attendre(250);
+          await attendre(250 * this.facteur);
           break;
         case 'carte':
           await this.montrerCarte(ev);
@@ -172,7 +189,7 @@ export class Controleur {
       el('p', { class: 'carte-texte' }, ev.carte.texte));
     if (this.partie.etat.joueurs[ev.joueur].ia) {
       const promesse = ouvrirModale({ titre, contenu, boutons: [{ libelle: 'OK', valeur: true, principal: true }] });
-      await Promise.race([promesse, attendre(this.delaiIA ? this.delaiIA * 3 : 1800)]);
+      await Promise.race([promesse, attendre(2200 * this.facteur)]);
       if (modaleEstOuverte()) fermerModale();
     } else {
       await ouvrirModale({ titre, contenu, boutons: [{ libelle: 'Compris !', valeur: true, principal: true }] });

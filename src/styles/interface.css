@@ -79,8 +79,38 @@
 .resume-echange { padding-left: 1.2rem; }
 @media (max-width: 600px) { .colonnes-echange { grid-template-columns: 1fr; } }
 
-/* Accueil provisoire */
-.accueil-simple { display: flex; flex-direction: column; gap: .8rem; max-width: 420px; margin: 3rem auto; padding: 1.5rem; background: #fff; border-radius: 14px; box-shadow: var(--ombre); }
+/* Accueil */
+.accueil { max-width: 880px; margin: 0 auto; padding: 1.5rem 1rem 3rem; display: flex; flex-direction: column; gap: 1.2rem; }
+.accueil-entete { text-align: center; }
+.logo-accueil { font-size: 1.6rem; margin-bottom: .5rem; }
+.accroche { font-size: 1.1rem; max-width: 36rem; margin: .5rem auto; }
+.pions-accueil { display: flex; justify-content: center; gap: .6rem; flex-wrap: wrap; }
+.pions-accueil .avatar { width: 52px; height: 52px; border-color: var(--ocre); background: #fff; }
+.reprise { background: var(--mer-clair); border: 2px solid var(--mer); border-radius: 14px; padding: 1rem 1.2rem; }
+.reprise p { margin-top: 0; }
+.formulaire-accueil { background: #fff; border-radius: 14px; box-shadow: var(--ombre); padding: 1.2rem 1.4rem; border-top: 6px solid var(--ocre); }
+.formulaire-accueil h2 { margin-top: 0; }
+.formulaire-accueil fieldset { border: 2px solid var(--calcaire-fonce); border-radius: 10px; margin: 0 0 1rem; padding: .8rem 1rem; }
+.formulaire-accueil legend { font-weight: 700; color: var(--mer-fonce); padding: 0 .3rem; }
+.formulaire-accueil input[type="text"], .formulaire-accueil input[type="number"], .formulaire-accueil select {
+  min-height: 40px; padding: .3rem .5rem; border: 2px solid #8aa4b5; border-radius: 8px; background: #fff; color: var(--texte);
+}
+.formulaire-accueil input[type="number"] { width: 6rem; }
+.champ { display: flex; flex-direction: column; gap: .2rem; font-size: .9rem; font-weight: 600; }
+.champ-ligne { flex-direction: row; align-items: center; flex-wrap: wrap; gap: .5rem; margin: .3rem 0; }
+.liste-joueurs { list-style: none; padding: 0; margin: .6rem 0 0; display: flex; flex-direction: column; gap: .5rem; }
+.ligne-joueur { display: grid; grid-template-columns: auto 1.4fr 1fr 1fr; gap: .6rem; align-items: end; padding: .5rem .6rem; border-left: 6px solid; border-radius: 8px; background: var(--calcaire); }
+.ligne-joueur .avatar { align-self: center; }
+.ligne-joueur input, .ligne-joueur select { width: 100%; }
+.option { display: flex; gap: .6rem; align-items: flex-start; margin: .4rem 0; cursor: pointer; }
+.option input { width: 22px; height: 22px; margin-top: .15rem; accent-color: var(--mer); }
+.option small { color: var(--texte-doux); }
+.boutons-accueil { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; }
+.btn-grand { font-size: 1.15rem; padding: .7rem 1.6rem; }
+.pied-accueil { text-align: center; }
+.pied-accueil a { color: var(--mer-fonce); }
+
+.visuellement-cache { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* Responsive */
 @media (max-width: 1000px) {
@@ -90,7 +120,15 @@
   .commandes { position: sticky; bottom: 0; z-index: 5; }
   .panneaux { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 }
+@media (max-width: 700px) {
+  .ligne-joueur { grid-template-columns: auto 1fr; }
+  .ligne-joueur .champ:first-of-type { grid-column: 2; }
+  .ligne-joueur .champ { grid-column: 1 / -1; }
+}
 @media (max-width: 600px) {
-  .centre { padding: .5em; gap: .4em; }
-  .pioches { display: none; }
+  .centre { padding: .5em; gap: .4em; font-size: 1.6em; }
+  .pioches, .logo-titre, .logo-vagues { display: none; }
+  .journal-liste { font-size: .8em; }
+  .modale-contenu, .modale-entete, .modale-boutons { padding-left: .8rem; padding-right: .8rem; }
+  .colonnes-echange { grid-template-columns: 1fr; }
 }

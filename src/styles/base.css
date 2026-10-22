@@ -90,6 +90,7 @@ button, input, select { font: inherit; }
   background: var(--mer-fonce); color: #fff; padding: .75rem 1.25rem; border-radius: 999px;
   box-shadow: var(--ombre); transition: transform .25s; z-index: 60; max-width: calc(100% - 2rem);
 }
+.notification:not(.visible) { visibility: hidden; transition: transform .25s, visibility 0s .25s; }
 .notification.visible { transform: translate(-50%, 0); }
 
 @media (prefers-reduced-motion: reduce) {
