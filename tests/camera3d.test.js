@@ -3,8 +3,9 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ECRAN, LIMITES, CAMERA_DEFAUT, cameraParDefaut, bornerCamera, orbiter, deplacer, zoomer,
-  azimutDeFace, interpoler, projeter, horizon, lireCamera, ecrireCamera
+  azimutDeFace, azimutVers, vueJoueur, interpoler, projeter, horizon, lireCamera, ecrireCamera
 } from '../src/ui/camera3d.js';
+import { placesTable, coinsTapis } from '../src/ui/table3d.js';
 
 const HAUTEUR = 0.84; // proportions de la vue 3D sur grand écran
 const proche = (a, b, marge = 1e-9) => Math.abs(a - b) <= marge;
@@ -115,6 +116,39 @@ describe('projection et horizon', () => {
     assert.ok(proche(quart.y, face.y, 1e-9));
     assert.ok(quart.decalage > face.decalage);
     assert.ok(proche(tour.decalage - face.decalage, ECRAN.panorama * ECRAN.rapportPanorama), 'un tour = toute la largeur du panorama');
+  });
+});
+
+describe('caméra qui suit les joueurs', () => {
+  const COINS = [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]].map(([x, y]) => ({ x, y }));
+  const largeurBord = (c, y) => projeter(c, { x: 0.5, y }, HAUTEUR).x - projeter(c, { x: -0.5, y }, HAUTEUR).x;
+
+  test('la table tourne par le plus court chemin', () => {
+    assert.equal(azimutVers(0, 90), -90);
+    assert.equal(azimutVers(-90, 180), -180);
+    assert.equal(azimutVers(-270, 0), -360, 'on continue dans le même sens plutôt que de revenir en arrière');
+    assert.equal(azimutVers(350, 0), 360);
+  });
+
+  test('vue de chaque joueur : sa place devant, le plateau bien en face, son tapis entier, la Corniche au loin', () => {
+    for (let n = 1; n <= 6; n++) {
+      for (const place of placesTable(n)) {
+        const c = vueJoueur(place, { ...CAMERA_DEFAUT, azimut: 37 });
+        const cas = `${n} joueurs, place ${place.joueur}`;
+        assert.equal((((c.azimut + place.angle) % 360) + 360) % 360, 0, `${cas} : sa place devant soi, plateau bien en face`);
+        for (const p of [...COINS, ...coinsTapis(place)]) {
+          const e = projeter(c, p, HAUTEUR);
+          assert.ok(e.x > 0.02 && e.x < 0.98 && e.y > 0.02 && e.y < HAUTEUR - 0.02, `${cas} : ${JSON.stringify(p)} → ${JSON.stringify(e)}`);
+        }
+        assert.ok(horizon(c, HAUTEUR).y > 0.09, `${cas} : la Corniche reste visible`);
+      }
+    }
+  });
+
+  test('le plateau y paraît plus grand que dans la vue de départ', () => {
+    const c = vueJoueur(placesTable(4)[0]);
+    assert.ok(largeurBord(c, -0.5) > largeurBord(CAMERA_DEFAUT, -0.5) * 1.15, 'bord lointain');
+    assert.ok(largeurBord(c, 0.5) > largeurBord(CAMERA_DEFAUT, 0.5) * 1.15, 'bord proche');
   });
 });
 

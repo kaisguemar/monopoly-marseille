@@ -5,15 +5,14 @@
 import { el, euros, texteSur } from './utilitaires.js';
 import { svgPion, COULEURS_JOUEURS } from './pions.js';
 import { proprietesDe } from '../moteur/regles.js';
-import { placesTable, jetons, verres, colonnesCartes, abscissesColonnes, CARTE, VERRES } from './table3d.js';
+import { placesTable, jetons, dispositionObjets, colonnesCartes, abscissesColonnes, CARTE } from './table3d.js';
 
-// Distances sur le tapis (en largeurs de plateau, depuis son bord côté plateau).
-const RANGEE_JETONS = 0.3;
-const RANGEES_VERRES = [0.215, 0.245, 0.275, 0.305];
+// Longueur en largeurs de plateau → unités de la table (100cqi = la largeur du plateau).
 const cqi = (x) => `${(x * 100).toFixed(2)}cqi`;
 
 // Rend (ou met à jour) la table. `table` est posée sur le ponton, dans la scène 3D du décor ;
 // `etiquettes` est par-dessus la vue. Seules les parties qui ont changé sont redessinées.
+// Renvoie les places des joueurs (voir placesTable).
 export function rendreTable(table, etiquettes, partie, options = {}) {
   const { etat, plateau } = partie;
   const { moi = null, salon = null } = options;
@@ -37,8 +36,7 @@ export function rendreTable(table, etiquettes, partie, options = {}) {
     majPlace(tapis, place);
     majPlace(objets, place);
     majCartes(tapis, place, j, etat, plateau, options);
-    majJetons(objets, place, j.argent);
-    majVerres(objets, place, etat.options.pastis ? j : null);
+    majObjets(objets, place, j.argent, etat.options.pastis ? j : null);
     majEtiquette(trouver(etiquettes, 'etiquette-joueur', j.id, () => el('div', { class: 'etiquette-joueur', 'data-joueur': j.id })),
       place, j, partie, { actif, salon, ...options });
   }
@@ -46,6 +44,7 @@ export function rendreTable(table, etiquettes, partie, options = {}) {
   for (const conteneur of [calqueTapis, calqueObjets, etiquettes]) {
     for (const enfant of [...conteneur.children]) if (Number(enfant.dataset.joueur) >= etat.joueurs.length) enfant.remove();
   }
+  return places;
 }
 
 function trouver(conteneur, classe, id, creer) {
@@ -65,9 +64,9 @@ function changement(element, nom, cle) {
 }
 
 // Le tapis (ou ce qui est posé dessus) est centré sur le plateau, tourné vers sa place, puis écarté
-// jusqu'à elle.
+// jusqu'à elle, et glissé le long de son côté s'il le partage.
 function majPlace(element, place) {
-  if (!changement(element, 'place', `${place.angle}|${place.distance}|${place.largeur}`)) return;
+  if (!changement(element, 'place', `${place.angle}|${place.distance}|${place.decalage}|${place.largeur}`)) return;
   // L'angle sert aussi à la caméra : ce qui est debout sur le tapis compense sa rotation.
   element.dataset.angle = String(place.angle);
   Object.assign(element.style, {
@@ -75,7 +74,7 @@ function majPlace(element, place) {
     height: cqi(place.profondeur),
     marginLeft: cqi(-place.largeur / 2),
     marginTop: cqi(-place.profondeur / 2),
-    transform: `rotateZ(${place.angle}deg) translateY(${cqi(place.distance)})`
+    transform: `rotateZ(${place.angle}deg) translate(${cqi(place.decalage)}, ${cqi(place.distance)})`
   });
 }
 
@@ -131,42 +130,20 @@ function carteSortie(pioche) {
     el('span', { class: 'carte-nom' }, 'Sortie des Baumettes'));
 }
 
-// Piles de jetons de casino, debout face à la caméra, alignées devant le joueur.
-function majJetons(objets, place, argent) {
-  if (!changement(objets, 'jetons', `${place.largeur}|${argent}`)) return;
+// Debout sur le tapis, face à la caméra : les piles de jetons de casino (son argent) et, en mode
+// Pastis (`joueur` donné), un verre à shooter par gorgée bue et un grand verre par cul sec.
+function majObjets(objets, place, argent, joueur) {
+  const boisson = joueur ? { gorgees: joueur.gorgees ?? 0, culsSecs: joueur.culsSecs ?? 0 } : null;
+  if (!changement(objets, 'objets', `${place.largeur}|${argent}|${boisson ? `${boisson.gorgees}|${boisson.culsSecs}` : ''}`)) return;
   const piles = jetons(argent);
-  const pas = piles.length > 1 ? Math.min(0.055, (place.largeur * 0.55 - 0.07) / (piles.length - 1)) : 0;
-  objets.querySelector('.jetons-joueur').replaceChildren(...piles.map((pile, k) => el('div', {
-    class: 'debout pile-jetons',
-    style: { left: cqi(0.06 + k * pas), top: cqi(RANGEE_JETONS) },
-    html: svgPile(pile)
-  })));
-}
-
-// Mode Pastis : un verre à shooter par gorgée bue, un grand verre par cul sec, en rangées.
-function majVerres(objets, place, joueur) {
-  const v = joueur ? verres(joueur.gorgees, joueur.culsSecs) : { petits: 0, grands: 0, reste: 0 };
-  if (!changement(objets, 'verres', `${place.largeur}|${v.petits}|${v.grands}|${v.reste}`)) return;
-  const elements = [];
-  const debut = place.largeur - 0.14 - VERRES.parRangee * 0.028;
-  for (let k = 0; k < v.petits; k++) {
-    elements.push(el('div', {
-      class: 'debout verre',
-      style: { left: cqi(debut + (k % VERRES.parRangee) * 0.028), top: cqi(RANGEES_VERRES[Math.floor(k / VERRES.parRangee)]) },
-      html: SVG_VERRE
-    }));
-  }
-  for (let k = 0; k < v.grands; k++) {
-    elements.push(el('div', {
-      class: 'debout verre grand-verre',
-      style: { left: cqi(place.largeur - 0.045 - Math.floor(k / 2) * 0.042), top: cqi(k % 2 ? 0.305 : 0.245) },
-      html: SVG_GRAND_VERRE
-    }));
-  }
-  if (v.reste) {
-    elements.push(el('span', { class: 'debout verres-reste', style: { left: cqi(debut - 0.03), top: cqi(0.3) } }, `+${v.reste}`));
-  }
-  objets.querySelector('.verres-joueur').replaceChildren(...elements);
+  const position = dispositionObjets(place.largeur, piles.length, boisson);
+  const debout = (classe, { x, y }, svg) => el('div', { class: `debout ${classe}`, style: { left: cqi(x), top: cqi(y) }, html: svg });
+  objets.querySelector('.jetons-joueur').replaceChildren(...piles.map((pile, k) => debout('pile-jetons', position.piles[k], svgPile(pile))));
+  const { reste } = position;
+  objets.querySelector('.verres-joueur').replaceChildren(
+    ...position.petits.map((p) => debout('verre', p, SVG_VERRE)),
+    ...position.grands.map((p) => debout('verre grand-verre', p, SVG_GRAND_VERRE)),
+    ...(reste ? [el('span', { class: 'debout verres-reste', style: { left: cqi(reste.x), top: cqi(reste.y) } }, `+${reste.nombre}`)] : []));
 }
 
 // Étiquette du joueur, accrochée à sa place (la caméra la positionne à chaque image).

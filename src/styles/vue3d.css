@@ -83,6 +83,7 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
 /* Toute la chaîne jusqu'aux pions et aux bâtiments reste en 3D. */
 .vue-3d .plateau,
 .vue-3d .case,
+.vue-3d .face-case,
 .vue-3d .bandeau,
 .vue-3d .constructions,
 .vue-3d .batiment,
@@ -101,6 +102,45 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
 .vue-3d .plateau { pointer-events: none; }
 .vue-3d .case, .vue-3d .centre { pointer-events: auto; }
 .vue-3d .constructions { filter: none; gap: .15em; font-size: 1.6em; }
+
+/* Le centre du plateau (journal, dés, pioches) se tourne vers le côté le plus proche de la caméra
+   (--tour-centre, posée par vue3d.js) : il reste lisible depuis chaque place. */
+.vue-3d .centre { rotate: var(--tour-centre, 0deg); transition: rotate .6s ease; }
+
+/* Comme sur un vrai plateau, chaque case se lit depuis son côté : ce qui y est imprimé
+   (.face-case) est disposé comme sur une case du bas, bandeau vers le centre, puis tourné vers
+   l'extérieur de son côté ; les coins regardent en diagonale. Les unités cq* se rapportent ici à
+   la case. */
+.vue-3d .case { container-type: size; }
+.vue-3d .face-case {
+  position: absolute; left: 50%; top: 50%;
+  width: 100cqw; height: 100cqh;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: .2em;
+  padding: 0 .2em .2em;
+  translate: -50% -50%;
+}
+.vue-3d .cote-gauche:not(.coin) .face-case, .vue-3d .cote-droite:not(.coin) .face-case { width: 100cqh; height: 100cqw; }
+.vue-3d .cote-gauche .face-case { rotate: 90deg; }
+.vue-3d .cote-haut .face-case { rotate: 180deg; }
+.vue-3d .cote-droite .face-case { rotate: -90deg; }
+.vue-3d .coin .face-case { height: 55cqh; justify-content: center; }
+.vue-3d .case[data-index="0"] .face-case { rotate: -45deg; }
+.vue-3d .case[data-index="10"] .face-case { rotate: 45deg; }
+.vue-3d .case[data-index="20"] .face-case { rotate: 135deg; }
+.vue-3d .case[data-index="30"] .face-case { rotate: -135deg; }
+/* … ce qui annule la disposition des côtés de la vue à plat (bandeau sur le côté, texte couché). */
+.vue-3d .case .bandeau { width: calc(100% + .4em); min-height: 2.3em; margin: 0 -.2em; writing-mode: horizontal-tb; order: 0; }
+.vue-3d .case .contenu { flex: none; justify-content: flex-start; padding: .2em 0 0; font-size: 1em; }
+.vue-3d .case .icone { font-size: 1.9em; }
+.vue-3d .case.coin .icone-coin { font-size: 2.4em; }
+/* Les pions se tiennent sur le bord de la case côté centre, derrière le nom pour qui la regarde
+   depuis son côté : ils ne le cachent pas. */
+.vue-3d .case .pions { justify-content: center; align-content: center; }
+.vue-3d .cote-bas:not(.coin) .pions { inset: 0 0 auto 0; }
+.vue-3d .cote-haut:not(.coin) .pions { inset: auto 0 0 0; }
+.vue-3d .cote-gauche:not(.coin) .pions { inset: 0 0 0 auto; flex-direction: column; }
+.vue-3d .cote-droite:not(.coin) .pions { inset: 0 auto 0 0; flex-direction: column; }
+.vue-3d .coin .pions { inset: 0; }
 
 /* Tranches du plateau, sur ses quatre côtés. */
 .vue-3d .tranche { display: block; position: absolute; background: linear-gradient(180deg, #7a4e2a, #4f3018); }
@@ -408,9 +448,11 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
 .jeu.en-3d .panneaux { display: none; }
 .jeu.en-3d .commandes { background: rgba(255, 255, 255, .9); backdrop-filter: blur(8px); box-shadow: 0 6px 24px rgba(4, 30, 50, .35); }
 
+/* Commandes de la caméra en haut à gauche, dans le ciel : en bas, elles cacheraient les étiquettes
+   et les tapis des joueurs de devant. */
 .vue-3d .commandes-3d {
   display: flex; gap: .3rem;
-  position: absolute; left: 1rem; bottom: 1rem; z-index: 6;
+  position: absolute; left: 1rem; top: 1rem; z-index: 6;
   padding: .3rem; border-radius: 999px;
   background: rgba(255, 255, 255, .78);
   box-shadow: 0 2px 10px rgba(8, 40, 70, .3);
@@ -425,6 +467,9 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
   cursor: pointer;
 }
 .btn-camera:hover { background: var(--mer-fonce); }
+/* Suivi du joueur dont c'est le tour : allumé quand il est actif. */
+.btn-camera[aria-pressed="true"] { background: #f2b705; box-shadow: inset 0 0 0 2px #fff6d6; }
+.btn-camera[aria-pressed="true"]:hover { background: #d9a204; }
 .vue-3d .aide-3d {
   display: block;
   position: absolute; z-index: 6;
@@ -453,7 +498,7 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
 @media (max-width: 700px) {
   .jeu.en-3d .barre-laterale { top: auto; left: .5rem; right: .5rem; bottom: .5rem; width: auto; max-height: 38vh; }
   .jeu.en-3d .commandes { position: static; }
-  .vue-3d .commandes-3d { left: auto; right: .5rem; top: .5rem; bottom: auto; gap: .2rem; padding: .2rem; }
+  .vue-3d .commandes-3d { left: auto; right: .5rem; top: .5rem; gap: .2rem; padding: .2rem; }
   .btn-camera { width: 30px; height: 30px; font-size: 16px; }
   .vue-3d .aide-3d { top: 3.2rem; font-size: .75rem; }
   .etiquette-joueur { min-width: 0; padding: .15rem .45rem .2rem; border-width: 2px; font-size: .72rem; }
@@ -463,4 +508,5 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
 
 @media (prefers-reduced-motion: reduce) {
   .vagues, .reflets, .accessoire .flotteur, .horizon .nuages, .mouette, .mouette svg, .vue-3d .pion-actif, .tapis.actif { animation: none; }
+  .vue-3d .centre { transition: none; }
 }

@@ -49,9 +49,11 @@ export class VuePlateau {
         'data-index': c.index,
         onclick: () => surClicCase(c.index)
       });
+      // Ce qui s'imprime sur la case (bandeau, nom, prix) : en 3D, tourné vers l'extérieur de son côté.
+      const face = el('span', { class: 'face-case' });
       if (c.type === 'propriete') {
         const g = plateau.groupes[c.groupe];
-        noeud.append(el('span', { class: 'bandeau', style: { background: g.couleur, color: texteSur(g.couleur) } },
+        face.append(el('span', { class: 'bandeau', style: { background: g.couleur, color: texteSur(g.couleur) } },
           el('span', { class: 'bandeau-nom' }, g.nomCourt),
           el('span', { class: 'constructions' })));
       }
@@ -61,9 +63,9 @@ export class VuePlateau {
       if (c.prix) contenu.append(el('span', { class: 'prix' }, euros(c.prix)));
       if (c.montant) contenu.append(el('span', { class: 'prix' }, `Payez ${euros(c.montant)}`));
       if (c.type === 'prison') contenu.append(el('span', { class: 'prix' }, 'Simple visite'));
-      noeud.append(contenu);
-      if (c.prix) noeud.append(el('span', { class: 'marque-proprietaire', 'aria-hidden': 'true', hidden: true }));
-      noeud.append(el('span', { class: 'pions' }));
+      face.append(contenu);
+      if (c.prix) face.append(el('span', { class: 'marque-proprietaire', 'aria-hidden': 'true', hidden: true }));
+      noeud.append(face, el('span', { class: 'pions' }));
       this.cases.push(noeud);
       racine.append(noeud);
     }

@@ -70,6 +70,9 @@ export class Controleur {
     this.scene3d = { table, etiquettes, camera3d };
     // En entrant en vue 3D, les joueurs s'installent autour du plateau.
     camera3d.surBascule = (actif) => { if (actif && this.vue) this.rafraichir(); };
+    // Sur un écran partagé, la caméra suit le joueur dont c'est le tour (en ligne, chacun a sa place
+    // devant lui).
+    camera3d.proposerSuivi(!this.reseau);
     this.elTour.after(bouton);
   }
 
@@ -93,7 +96,8 @@ export class Controleur {
     // En vue 3D, les mêmes informations sont autour du plateau : jetons, cartes, verres, étiquettes.
     const { table, etiquettes, camera3d } = this.scene3d;
     if (camera3d.actif) {
-      rendreTable(table, etiquettes, this.partie, { ...options, surClicJoueur: (angle) => camera3d.tournerVers(angle) });
+      const places = rendreTable(table, etiquettes, this.partie, { ...options, surClicJoueur: (angle) => camera3d.tournerVers(angle) });
+      camera3d.suivreJoueur(etat.terminee ? null : places[etat.courant]);
       camera3d.rendre();
     }
     this.rendreActions();

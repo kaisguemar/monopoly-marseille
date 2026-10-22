@@ -67,6 +67,28 @@ export function zoomer(c, facteur, vise = { x: 0, y: 0 }) {
 // Azimut « de face » le plus proche : revenir à la vue de départ sans faire de tour inutile.
 export const azimutDeFace = (azimut) => Math.round(azimut / 360) * 360;
 
+// Azimut le plus proche de `actuel` qui amène devant soi la place d'angle `angle` (voir table3d.js) :
+// la table tourne par le plus court chemin.
+export function azimutVers(actuel, angle) {
+  return actuel + ((((-angle - actuel) % 360) + 540) % 360) - 180;
+}
+
+// Vue d'un joueur, quand la caméra suit la partie (sur un même écran) : sa place devant soi, le
+// plateau bien en face, assez près pour lire les cases, tout son tapis visible et la Corniche au
+// loin. Un peu plus rasante que la vue de départ, elle permet un plateau plus grand sans perdre la
+// Corniche. Sur un côté partagé, la vue se décale à moitié vers son tapis (`recentrage`).
+export const VUE_JOUEUR = Object.freeze({ inclinaison: 62, zoom: 0.72, decalageY: -0.025, recentrage: 0.5 });
+
+export function vueJoueur(place, actuelle = CAMERA_DEFAUT) {
+  return bornerCamera({
+    azimut: azimutVers(actuelle.azimut, place.angle),
+    inclinaison: VUE_JOUEUR.inclinaison,
+    zoom: VUE_JOUEUR.zoom,
+    decalageX: -VUE_JOUEUR.recentrage * (place.decalage ?? 0) * ECRAN.echelle * VUE_JOUEUR.zoom,
+    decalageY: VUE_JOUEUR.decalageY
+  });
+}
+
 // Position intermédiaire entre deux caméras (animations), t de 0 à 1.
 export function interpoler(a, b, t) {
   const milieu = (cle) => a[cle] + (b[cle] - a[cle]) * t;

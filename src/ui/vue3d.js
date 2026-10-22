@@ -6,13 +6,14 @@
 // mémorisés dans le navigateur.
 import { el } from './utilitaires.js';
 import {
-  ECRAN, cameraParDefaut, bornerCamera, orbiter, deplacer, zoomer, interpoler, azimutDeFace,
-  projeter, horizon, lireCamera, ecrireCamera
+  ECRAN, cameraParDefaut, bornerCamera, orbiter, deplacer, zoomer, interpoler, azimutDeFace, azimutVers,
+  vueJoueur, projeter, horizon, lireCamera, ecrireCamera
 } from './camera3d.js';
 
 const CLE_VUE = 'monopoly-marseille-vue3d';
 const CLE_CAMERA = 'monopoly-marseille-camera3d-table';
 const CLE_AIDE = 'monopoly-marseille-aide3d';
+const CLE_SUIVI = 'monopoly-marseille-suivi3d';
 
 function lire(cle) {
   try {
@@ -86,6 +87,9 @@ class Camera3D {
     this.resolution = 1;
     this.camera = lireCamera(lire(CLE_CAMERA)) ?? cameraParDefaut(window.innerWidth);
     this.vue = { ...this.camera };
+    // Suivi du joueur dont c'est le tour (parties sur un même écran) : `place` est la sienne, `cle`
+    // celle où la caméra s'est placée en dernier (elle ne bouge que quand la main passe).
+    this.suivi = { disponible: false, actif: lire(CLE_SUIVI) !== '0', place: null, cle: null, enAttente: false };
     cameraAffichee = this;
     this.bouton = el('button', { type: 'button', class: 'btn btn-petit bouton-vue', onclick: () => this.basculer() });
     this.commandes = this.creerCommandes();
@@ -114,14 +118,60 @@ class Camera3D {
   creerCommandes() {
     const bouton = (texte, titre, action) => el('button', { type: 'button', class: 'btn-camera', title: titre, 'aria-label': titre, onclick: action }, texte);
     const vers = (modif) => () => this.animerVers(bornerCamera({ ...this.camera, ...modif(this.camera) }));
+    this.boutonSuivi = bouton('🎥', 'Suivre le joueur dont c\'est le tour', () => this.basculerSuivi());
+    this.boutonSuivi.hidden = true;
+    this.boutonSuivi.setAttribute('aria-pressed', String(this.suivi.actif));
     return el('div', { class: 'commandes-3d', role: 'toolbar', 'aria-label': 'Caméra de la vue 3D' },
+      this.boutonSuivi,
       bouton('↺', 'Tourner le plateau vers la gauche', vers((c) => ({ azimut: c.azimut - 45 }))),
       bouton('↻', 'Tourner le plateau vers la droite', vers((c) => ({ azimut: c.azimut + 45 }))),
       bouton('▲', 'Incliner le plateau (vue plus rasante)', vers((c) => ({ inclinaison: c.inclinaison + 8 }))),
       bouton('▼', 'Redresser le plateau (vue plus plongeante)', vers((c) => ({ inclinaison: c.inclinaison - 8 }))),
       bouton('+', 'Zoomer', () => this.animerVers(zoomer(this.camera, 1.3, this.viseCentreVue()))),
       bouton('−', 'Dézoomer', () => this.animerVers(zoomer(this.camera, 1 / 1.3, this.viseCentreVue()))),
-      bouton('⌖', 'Recentrer la vue', () => this.animerVers({ ...cameraParDefaut(window.innerWidth), azimut: azimutDeFace(this.camera.azimut) })));
+      bouton('⌖', 'Recentrer la vue', () => this.recentrer()));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Suivi du joueur dont c'est le tour
+  // ---------------------------------------------------------------------------
+
+  // Le suivi n'a de sens que sur un écran partagé (partie locale) : son bouton n'apparaît qu'alors.
+  proposerSuivi(disponible) {
+    this.suivi.disponible = disponible;
+    this.boutonSuivi.hidden = !disponible;
+  }
+
+  basculerSuivi() {
+    this.suivi.actif = !this.suivi.actif;
+    ecrire(CLE_SUIVI, this.suivi.actif ? '1' : '0');
+    this.boutonSuivi.setAttribute('aria-pressed', String(this.suivi.actif));
+    this.suivi.cle = null;
+    if (this.suivi.actif) this.suivreJoueur(this.suivi.place);
+  }
+
+  // Appelée à chaque mise à jour de la partie avec la place du joueur dont c'est le tour : quand la
+  // main passe, la caméra se place face à son côté du plateau. Entre-temps, on peut regarder
+  // ailleurs ; la caméra ne reviendra qu'au tour suivant (ou avec ⌖).
+  suivreJoueur(place) {
+    this.suivi.place = place;
+    if (!this.actif || !this.suivi.disponible || !this.suivi.actif || !place) return;
+    const cle = `${place.angle}|${place.decalage}`;
+    if (cle === this.suivi.cle) return;
+    this.suivi.cle = cle;
+    this.allerVersJoueur();
+  }
+
+  allerVersJoueur() {
+    // En plein geste, la caméra attend que le doigt (ou la souris) se lève.
+    this.suivi.enAttente = this.pointeurs.size > 0;
+    if (!this.suivi.enAttente) this.animerVers(vueJoueur(this.suivi.place, this.camera), { duree: 900 });
+  }
+
+  // ⌖ : retour à la vue du joueur suivi, ou à la vue de départ.
+  recentrer() {
+    if (this.suivi.disponible && this.suivi.actif && this.suivi.place) this.allerVersJoueur();
+    else this.animerVers({ ...cameraParDefaut(window.innerWidth), azimut: azimutDeFace(this.camera.azimut) });
   }
 
   // ---------------------------------------------------------------------------
@@ -143,6 +193,11 @@ class Camera3D {
     const haut = libre.y + (libre.hauteur - largeur * ECRAN.hauteurVue) / 2;
     this.dims = { largeur, hauteur: largeur * ECRAN.hauteurVue, gauche, haut };
     this.libre = { gauche: libre.x, haut: libre.y, droite: libre.x + libre.largeur, bas: libre.y + libre.hauteur };
+    // Les étiquettes contournent aussi la barre de la caméra.
+    const barre = this.commandes.getBoundingClientRect();
+    this.barre = barre.width
+      ? { gauche: barre.left - ecran.left, haut: barre.top - ecran.top, droite: barre.right - ecran.left, bas: barre.bottom - ecran.top }
+      : null;
     const style = this.conteneur.style;
     style.setProperty('--scene-s', `${largeur.toFixed(1)}px`);
     style.setProperty('--scene-gauche', `${gauche.toFixed(1)}px`);
@@ -167,6 +222,13 @@ class Camera3D {
       debout.style.setProperty('--face-camera', `rotateZ(${(-angle).toFixed(2)}deg) rotateX(${(-c.inclinaison).toFixed(2)}deg)`);
     }
     this.ajusterResolution(c.zoom);
+    // Le centre du plateau (journal, dés, pioches) se tourne vers le côté le plus proche de la
+    // caméra, avec un peu de marge pour ne pas hésiter entre deux côtés.
+    const vise = -c.azimut;
+    if (this.tourCentre === undefined || Math.abs(vise - this.tourCentre) > 50) {
+      this.tourCentre = Math.round(vise / 90) * 90;
+      scene.querySelector('.centre')?.style.setProperty('--tour-centre', `${this.tourCentre}deg`);
+    }
     // L'horizon couvre toute la largeur de l'écran, posé sur le bord lointain de la mer.
     const h = horizon(c);
     ciel.style.setProperty('--horizon-y', `${(haut + h.y * largeur).toFixed(1)}px`);
@@ -176,7 +238,7 @@ class Camera3D {
 
   // Les étiquettes des joueurs suivent leur place sur la table (data-ancre-x/y, en plateaux) ;
   // elles restent nettes et lisibles, un peu plus grandes de près, et entières à l'écran, hors du
-  // panneau des actions : celle d'une place hors champ attend au bord.
+  // panneau des actions et de la barre de la caméra : celle d'une place hors champ attend au bord.
   placerEtiquettes(c = this.vue) {
     if (!this.actif || !this.dims.largeur) return;
     const { largeur, gauche, haut } = this.dims;
@@ -192,16 +254,19 @@ class Camera3D {
       const demiLargeur = (tailles[k].largeur * taille) / 2 + MARGE_ETIQUETTE;
       const demiHauteur = (tailles[k].hauteur * taille) / 2 + MARGE_ETIQUETTE;
       const ex = borner(gauche + p.x * largeur, this.libre.gauche + demiLargeur, this.libre.droite - demiLargeur);
-      const ey = borner(haut + p.y * largeur, this.libre.haut + demiHauteur, this.libre.bas - demiHauteur);
+      let ey = borner(haut + p.y * largeur, this.libre.haut + demiHauteur, this.libre.bas - demiHauteur);
+      const b = this.barre;
+      if (b && ex + demiLargeur > b.gauche && ex - demiLargeur < b.droite && ey + demiHauteur > b.haut && ey - demiHauteur < b.bas) {
+        // Sur la barre de la caméra : l'étiquette passe au-dessus (au-dessous si la barre est en haut).
+        ey = b.haut > (this.libre.haut + this.libre.bas) / 2 ? b.haut - demiHauteur : b.bas + demiHauteur;
+      }
       etiquette.style.transform = `translate(${ex.toFixed(1)}px, ${ey.toFixed(1)}px) translate(-50%, -50%) scale(${taille.toFixed(3)})`;
     });
   }
 
   // Tourne la table pour amener devant soi la place d'angle `angle` (vue du dessus).
   tournerVers(angle) {
-    const voulu = -angle;
-    const ecart = ((((voulu - this.camera.azimut) % 360) + 540) % 360) - 180;
-    this.animerVers(bornerCamera({ ...this.camera, azimut: this.camera.azimut + ecart }), { duree: 650 });
+    this.animerVers(bornerCamera({ ...this.camera, azimut: azimutVers(this.camera.azimut, angle) }), { duree: 650 });
   }
 
   // Résolution du plateau et de la table selon le zoom (voir .scene-plateau et .table-joueurs dans
@@ -271,6 +336,8 @@ class Camera3D {
     if (actif) {
       this.pleinEcran(true);
       this.mesurer();
+      // La caméra rejoindra le joueur suivi (le contrôleur rappelle suivreJoueur).
+      this.suivi.cle = null;
       this.surBascule?.(true);
       if (anime) {
         this.vue = { ...POSE_A_PLAT, azimut: azimutDeFace(this.camera.azimut) };
@@ -330,15 +397,11 @@ class Camera3D {
     return this.viseEcran(cadre.left + cadre.width / 2, cadre.top + cadre.height / 2);
   }
 
+  // Un geste peut commencer sur une étiquette de joueur (elles couvrent une bonne part d'un petit
+  // écran) : un simple toucher sur son nom reste un clic.
   surAppui(e) {
-    if (!this.actif || e.target.closest('.commandes-3d, .bulle-boisson, .etiquette-joueur button')) return;
+    if (!this.actif || e.target.closest('.commandes-3d, .bulle-boisson')) return;
     if (e.pointerType === 'mouse' && e.button > 2) return;
-    // Une animation en cours s'arrête là où elle en est.
-    if (this.animation) {
-      cancelAnimationFrame(this.animation);
-      this.animation = null;
-      this.camera = bornerCamera(this.vue);
-    }
     if (!this.pointeurs.size) this.glisse = false;
     this.pointeurs.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
     this.mode = e.button === 1 || e.button === 2 || e.shiftKey || e.ctrlKey || e.metaKey ? 'deplacer' : 'orbiter';
@@ -355,6 +418,13 @@ class Camera3D {
       // Un simple clic sur une case doit rester un clic : on ne tourne qu'au-delà de quelques pixels.
       if (this.pointeurs.size < 2 && Math.hypot(e.clientX - p.x0, e.clientY - p.y0) < 6) return;
       this.glisse = true;
+      // Une animation en cours (la table qui tourne vers le joueur suivant…) s'arrête là où elle en
+      // est ; un simple clic, lui, la laisse finir.
+      if (this.animation) {
+        cancelAnimationFrame(this.animation);
+        this.animation = null;
+        this.camera = bornerCamera(this.vue);
+      }
       this.conteneur.classList.add('manipulation');
       for (const id of this.pointeurs.keys()) {
         try {
@@ -389,6 +459,7 @@ class Camera3D {
   surRelache(e) {
     if (!this.pointeurs.delete(e.pointerId) || this.pointeurs.size) return;
     this.conteneur.classList.remove('manipulation');
+    if (this.suivi.enAttente) this.allerVersJoueur();
     if (!this.glisse) return;
     // Le clic qui suit un glisser ne doit pas ouvrir la fiche de la case survolée.
     this.clicBloque = true;

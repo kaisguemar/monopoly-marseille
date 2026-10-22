@@ -3,7 +3,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { plateau } from './aide.js';
 import {
-  TABLE, CARTE, PILE_MAX, VERRES, placesTable, coinsTapis, etendueCarre, jetons, verres, colonnesCartes, abscissesColonnes
+  TABLE, CARTE, PILE_MAX, VERRES, OBJETS, placesTable, coinsTapis, jetons, verres, dispositionObjets, colonnesCartes, abscissesColonnes
 } from '../src/ui/table3d.js';
 import { CUL_SEC } from '../src/moteur/pastis.js';
 
@@ -25,20 +25,36 @@ function seChevauchent(a, b) {
 }
 
 describe('places autour du plateau', () => {
-  test('réparties régulièrement, le premier joueur devant', () => {
+  test('chacun face à un côté du plateau, le premier joueur devant, dans le sens du jeu', () => {
     for (let n = 1; n <= 6; n++) {
       const places = placesTable(n);
       assert.equal(places.length, n);
-      places.forEach((p, i) => assert.ok(Math.abs(p.angle - (i * 360) / n) < 1e-9));
       assert.equal(places[0].angle, 0);
       assert.ok(places[0].centre.y > 0 && Math.abs(places[0].centre.x) < 1e-9, 'devant = vers la caméra');
+      for (const p of places) assert.ok([0, 90, 180, 270].includes(p.angle), `${n} joueurs : face à un côté`);
+      // Sens du jeu : devant, à gauche, au fond, à droite (sens des aiguilles d'une montre vu du dessus).
+      for (let i = 1; i < n; i++) assert.ok(places[i].angle >= places[i - 1].angle, `${n} joueurs`);
     }
-    // À deux, face à face ; à quatre, un par côté, dans le sens du jeu (devant, gauche, fond, droite).
     assert.deepEqual(placesTable(2).map((p) => p.angle), [0, 180]);
+    assert.deepEqual(placesTable(3).map((p) => p.angle), [0, 90, 270]);
     const attendu = [[0, 0.73], [-0.73, 0], [0, -0.73], [0.73, 0]];
     placesTable(4).forEach((p, i) => {
       assert.ok(Math.abs(p.centre.x - attendu[i][0]) < 1e-9 && Math.abs(p.centre.y - attendu[i][1]) < 1e-9, JSON.stringify(p.centre));
     });
+  });
+
+  test('à cinq et six, deux joueurs partagent un côté, et le jeu passe à gauche', () => {
+    assert.deepEqual(placesTable(5).map((p) => p.angle), [0, 90, 180, 180, 270]);
+    const six = placesTable(6);
+    assert.deepEqual(six.map((p) => p.angle), [0, 90, 90, 180, 270, 270]);
+    for (const p of six) assert.equal(p.largeur, p.angle % 180 ? TABLE.largeurPartagee : TABLE.largeur);
+    // À gauche du plateau : le premier des deux est à droite de son voisin (vu de leur côté),
+    // c'est-à-dire plus près de la place de devant, qui vient de jouer.
+    const [, premier, second] = six;
+    assert.ok(premier.decalage > 0 && second.decalage < 0);
+    assert.ok(premier.centre.y > second.centre.y);
+    // L'étiquette suit son tapis le long du côté.
+    assert.ok(Math.abs(premier.ancre.y - premier.centre.y) < 1e-9 && premier.ancre.x < premier.centre.x);
   });
 
   test('le joueur de l\'écran est devant, les autres suivent dans l\'ordre du jeu', () => {
@@ -60,12 +76,41 @@ describe('places autour du plateau', () => {
       for (const p of placesTable(n)) assert.ok(Math.hypot(p.ancre.x, p.ancre.y) < TABLE.rayon, 'étiquette sur le ponton');
     }
   });
+});
 
-  test('un tapis en biais s\'écarte davantage du coin du plateau', () => {
-    assert.equal(etendueCarre(0), 0.5);
-    assert.ok(Math.abs(etendueCarre(45) - Math.SQRT1_2) < 1e-12);
-    const [, biais] = placesTable(3);
-    assert.ok(biais.distance > placesTable(4)[0].distance);
+describe('objets debout sur les tapis', () => {
+  const bords = (positions, largeur) => positions.map((p) => [p.x - largeur / 2, p.x + largeur / 2]);
+
+  test('piles de jetons à gauche, verres à droite, tout reste sur le tapis', () => {
+    for (const largeur of [TABLE.largeur, TABLE.largeurPartagee]) {
+      for (let piles = 0; piles <= 20; piles++) {
+        for (const boisson of [null, { gorgees: 0, culsSecs: 0 }, { gorgees: 7, culsSecs: 1 }, { gorgees: 90, culsSecs: 9 }]) {
+          const d = dispositionObjets(largeur, piles, boisson);
+          const cas = `${largeur} / ${piles} piles / ${JSON.stringify(boisson)}`;
+          assert.equal(d.piles.length, piles);
+          const jetons = bords(d.piles, OBJETS.pile);
+          const lesVerres = [...bords(d.petits, OBJETS.verre), ...bords(d.grands, OBJETS.grandVerre)];
+          for (const [g, dr] of [...jetons, ...lesVerres]) assert.ok(g >= 0.02 && dr <= largeur - 0.02, cas);
+          const finJetons = Math.max(0, ...jetons.map(([, dr]) => dr));
+          const debutVerres = Math.min(largeur, ...lesVerres.map(([g]) => g));
+          assert.ok(finJetons < debutVerres, cas);
+          if (d.reste) assert.ok(d.reste.x > finJetons && d.reste.x < debutVerres, cas);
+        }
+      }
+    }
+  });
+
+  test('chaque gorgée est un verre posé ou comptée à part ; les tapis étroits ont des rangées plus courtes', () => {
+    for (const largeur of [TABLE.largeur, TABLE.largeurPartagee]) {
+      const boisson = { gorgees: 53 + CUL_SEC * 6, culsSecs: 6 };
+      const d = dispositionObjets(largeur, 1, boisson);
+      assert.equal(d.petits.length + CUL_SEC * d.grands.length + (d.reste?.nombre ?? 0), boisson.gorgees);
+    }
+    const etroit = dispositionObjets(TABLE.largeurPartagee, 1, { gorgees: 40, culsSecs: 0 });
+    const large = dispositionObjets(TABLE.largeur, 1, { gorgees: 40, culsSecs: 0 });
+    assert.equal(large.petits.length, VERRES.petitsMax);
+    assert.ok(etroit.petits.length < large.petits.length);
+    assert.equal(dispositionObjets(TABLE.largeur, 3).petits.length, 0, 'pas de verres hors du mode Pastis');
   });
 });
 
