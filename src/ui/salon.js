@@ -1,6 +1,7 @@
 // Salon d'attente du mode en ligne : code à partager, joueurs connectés, réglages de l'hôte.
 import { el } from './utilitaires.js';
 import { svgPion, COULEURS_JOUEURS } from './pions.js';
+import { choixModeDeJeu } from './accueil.js';
 
 // Affiche (ou redessine) le salon à partir du dernier message du serveur.
 // client : ClientEnLigne ; surQuitter() : retour à l'accueil.
@@ -67,6 +68,7 @@ export function afficherSalon(racine, { message, client, surQuitter, connexion =
       estHote && !complet
         ? el('button', { type: 'button', class: 'btn', onclick: () => action('ordinateur') }, '🤖 Ajouter un ordinateur')
         : null,
+      choixModeDeJeu(!!salon.options.pastis, (pastis) => action('options', { options: { pastis } }), estHote),
       el('h2', {}, 'Règles de la maison'),
       option('parcGratuit', 'Cagnotte du Trottoir gratuit'),
       option('doubleDepart', 'Double salaire sur Départ'),

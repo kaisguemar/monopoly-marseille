@@ -34,3 +34,8 @@ export function texteSur(couleurHex) {
 export function echapper(texte) {
   return String(texte).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 }
+
+// Thème du mode Pastis (couleurs jaune et bleu) appliqué à toute la page.
+export function appliquerTheme(pastis) {
+  document.body.classList.toggle('theme-pastis', !!pastis);
+}

@@ -22,6 +22,7 @@ export function dureeAnimations(evenements = []) {
     else if (e.type === 'deplacement') total += 140 * e.chemin.length;
     else if (e.type === 'teleportation') total += 500;
     else if (e.type === 'carte') total += 2200;
+    else if (e.type === 'boire') total += 1300;
   }
   return total;
 }
@@ -192,7 +193,7 @@ export class GestionnaireSalons {
     this.verifierHote(salon, jeton);
     this.verifierAvantPartie(salon);
     const o = salon.options;
-    for (const cle of ['parcGratuit', 'doubleDepart', 'partieRapide']) {
+    for (const cle of ['parcGratuit', 'doubleDepart', 'partieRapide', 'pastis']) {
       if (cle in options) o[cle] = !!options[cle];
     }
     if ('toursMax' in options) o.toursMax = Math.max(5, Math.min(200, Math.floor(Number(options.toursMax)) || 20));

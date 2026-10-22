@@ -31,7 +31,7 @@ export function etiquetteCase(c, plateau) {
 }
 
 export class VuePlateau {
-  constructor(racine, plateau, { surClicCase }) {
+  constructor(racine, plateau, { surClicCase, pastis = false }) {
     this.plateau = plateau;
     this.cases = [];
     this.racine = racine;
@@ -72,6 +72,7 @@ export class VuePlateau {
         el('span', { class: 'logo-soleil' }),
         el('span', { class: 'logo-titre' }, 'Monopoly'),
         el('span', { class: 'logo-ville' }, 'Marseille'),
+        pastis ? el('span', { class: 'logo-edition' }, 'Édition Pastis') : null,
         el('span', { class: 'logo-vagues' }, '〰〰〰')),
       el('div', { class: 'pioches' },
         el('div', { class: 'pioche pioche-chance' }, el('span', { class: 'pioche-icone', 'aria-hidden': 'true' }, '?'), 'Chance'),

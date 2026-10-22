@@ -1,0 +1,98 @@
+/* Mode Pastis : choix du mode de jeu, thème jaune soleil et bleu roi, bulles « gorgées ». */
+
+/* Choix du mode (accueil et salon) */
+.choix-modes { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.choix-mode {
+  display: flex; gap: .6rem; align-items: flex-start;
+  padding: .7rem .8rem; border: 2px solid var(--calcaire-fonce); border-radius: 10px;
+  background: var(--calcaire); cursor: pointer;
+}
+.choix-mode input { width: 22px; height: 22px; margin-top: .1rem; accent-color: var(--mer); flex: none; }
+.choix-mode span { display: flex; flex-direction: column; gap: .2rem; }
+.choix-mode small { color: var(--texte-doux); }
+.choix-mode:has(input:checked) { border-color: var(--mer); background: var(--mer-clair); }
+.choix-mode:has(input:disabled) { cursor: default; }
+.choix-pastis:has(input:checked) { border-color: #0a3a9e; background: #ffd200; }
+.choix-pastis:has(input:checked) small { color: #062766; }
+.regles-pastis { margin-top: .8rem; }
+.regles-pastis summary { cursor: pointer; font-weight: 700; color: var(--mer-fonce); min-height: 32px; }
+.regles-pastis ul, .liste-regles { margin: .5rem 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: .3rem; }
+.avertissement { font-size: .88rem; color: var(--texte-doux); font-style: italic; }
+@media (max-width: 600px) { .choix-modes { grid-template-columns: 1fr; } }
+
+/* Thème : redéfinition de la palette */
+body.theme-pastis {
+  --mer: #0a3a9e;
+  --mer-fonce: #062766;
+  --mer-clair: #fff4bf;
+  --calcaire: #fffbea;
+  --calcaire-fonce: #f2dc84;
+  --ocre: #ffd200;
+  --ocre-fonce: #0a3a9e;
+  --texte: #10204a;
+  --texte-doux: #3d4a6b;
+  background: #ffd200;
+  background-image:
+    radial-gradient(circle at 50% -10%, #fff6c2 0, rgba(255, 246, 194, 0) 55%),
+    repeating-conic-gradient(from 0deg at 50% -10%, rgba(255, 255, 255, .14) 0deg 6deg, rgba(255, 255, 255, 0) 6deg 12deg),
+    linear-gradient(180deg, #ffe14d 0%, #ffc800 100%);
+  background-attachment: fixed;
+}
+.theme-pastis .formulaire-accueil { border-top-color: var(--mer); }
+.theme-pastis .accroche { color: var(--mer-fonce); font-weight: 600; }
+.theme-pastis .pions-accueil .avatar { border-color: var(--mer); }
+
+/* Plateau aux couleurs de l'apéro */
+.theme-pastis .plateau { background: var(--mer); }
+.theme-pastis .case { background: #fffbea; }
+.theme-pastis .case:hover { background: #fff; }
+.theme-pastis .case.coin { background: #ffd200; color: var(--mer-fonce); }
+.theme-pastis .case-chance .icone, .theme-pastis .case-communaute .icone { color: var(--mer); }
+.theme-pastis .centre {
+  background:
+    radial-gradient(circle at 50% 18%, #ffd200 0, #ffd200 9%, rgba(255, 210, 0, 0) 9.5%),
+    repeating-conic-gradient(from 0deg at 50% 18%, rgba(255, 210, 0, .22) 0deg 7deg, rgba(255, 210, 0, 0) 7deg 14deg),
+    linear-gradient(180deg, #0d47b8 0%, #0a3a9e 60%, #072c7a 100%);
+}
+.theme-pastis .logo-soleil { display: none; }
+.theme-pastis .logo-titre { color: var(--mer); }
+.theme-pastis .centre .logo-titre { color: #fff; }
+.theme-pastis .logo-ville { color: #ffd200; text-shadow: 3px 3px 0 #062766; }
+.theme-pastis .logo-vagues { color: #fff; }
+.logo-edition {
+  position: relative; margin: .25em 0 .1em; padding: .15em .8em;
+  border-radius: 999px; background: #ffd200; color: #062766;
+  font-weight: 800; letter-spacing: .15em; text-transform: uppercase; font-size: .95em;
+}
+.theme-pastis .pioche { background: #fffbea; border-color: #ffd200; border-style: solid; color: var(--mer-fonce); }
+.theme-pastis .zone-des, .theme-pastis .cagnotte { color: #fff; }
+.theme-pastis .journal { background: #fffbea; border: 3px solid #ffd200; }
+
+/* Panneaux et compteur de gorgées */
+.compteur-gorgees { margin: .2rem 0; font-weight: 700; color: var(--mer); }
+.theme-pastis .panneau-joueur.actif { box-shadow: 0 0 0 3px #ffd200, var(--ombre); }
+
+/* Bulle « Untel boit 2 gorgées » au centre du plateau */
+.plateau-conteneur { position: relative; }
+.bulle-boisson {
+  position: absolute; left: 50%; top: 42%; z-index: 20;
+  display: flex; flex-direction: column; align-items: center; gap: .2em;
+  max-width: 70%; padding: .8em 1.4em;
+  border: .25em solid #0a3a9e; border-radius: 1.2em;
+  background: #ffd200; color: #062766; text-align: center;
+  font-size: 2.6cqi; box-shadow: 0 .4em 1.4em rgba(6, 39, 102, .45);
+  transform: translate(-50%, -50%);
+  animation: bulle-boisson .45s cubic-bezier(.2, 1.6, .4, 1) both;
+  pointer-events: none;
+}
+.bulle-boisson[hidden] { display: none; }
+.bulle-boisson .verre { font-size: 2.2em; line-height: 1; animation: trinquer .6s ease-in-out .2s 2 alternate; }
+.bulle-boisson strong { font-size: 1.1em; }
+.bulle-boisson small { font-size: .7em; }
+.bulle-boisson.cul-sec { background: #0a3a9e; color: #fff; border-color: #ffd200; }
+@keyframes bulle-boisson { from { transform: translate(-50%, -50%) scale(.3); opacity: 0; } }
+@keyframes trinquer { to { transform: rotate(-25deg) translateY(-.15em); } }
+@media (max-width: 600px) { .bulle-boisson { font-size: 4.2cqi; max-width: 90%; } }
+@media (prefers-reduced-motion: reduce) {
+  .bulle-boisson, .bulle-boisson .verre { animation: none; }
+}

@@ -5,7 +5,7 @@
 // En ligne (option `reseau`), le serveur fait autorité : `agir()` lui envoie l'action,
 // et chaque mise à jour reçue (`recevoirMessage()`) remplace l'état local puis est animée.
 // Seul le joueur de cet écran (`moi`) peut alors agir.
-import { el, euros, attendre } from './utilitaires.js';
+import { el, euros, attendre, appliquerTheme } from './utilitaires.js';
 import { VuePlateau } from './plateau.js';
 import { animerDes, afficherDes } from './des.js';
 import { rendrePanneaux } from './panneaux.js';
@@ -13,6 +13,7 @@ import { ficheCase } from './fiche.js';
 import { ouvrirModale, fermerModale, modaleEstOuverte } from './modale.js';
 import { AMENDE_PRISON } from '../moteur/regles.js';
 import { Partie } from '../moteur/partie.js';
+import { REGLES_PASTIS, AVERTISSEMENT_PASTIS, libelleBoisson, listeNoms, plusGrosBuveur } from '../moteur/pastis.js';
 
 const DUREE_PAS = 140;
 const ACTIONS_GESTION = ['construire', 'vendreConstruction', 'hypothequer', 'leverHypotheque'];
@@ -35,8 +36,10 @@ export class Controleur {
     this.fileMessages = Promise.resolve();
     this.attentesVersion = [];
     this.envoi = false;
+    this.pastis = !!partie.etat.options.pastis;
+    appliquerTheme(this.pastis);
     this.construireDom(racine);
-    this.vue = new VuePlateau(this.elPlateau, this.plateau, { surClicCase: (i) => this.montrerFiche(i) });
+    this.vue = new VuePlateau(this.elPlateau, this.plateau, { surClicCase: (i) => this.montrerFiche(i), pastis: this.pastis });
     afficherDes(this.vue.zoneDes, partie.etat.des);
     this.rafraichir();
     // Laisse le temps aux extensions (ordinateur, sauvegarde) d'être prêtes.
@@ -46,7 +49,10 @@ export class Controleur {
   construireDom(racine) {
     racine.replaceChildren(
       el('div', { class: 'jeu' },
-        el('div', { class: 'plateau-conteneur' }, this.elPlateau = el('div', { class: 'plateau' })),
+        el('div', { class: 'plateau-conteneur' },
+          this.elPlateau = el('div', { class: 'plateau' }),
+          // Bulle « Untel boit 2 gorgées » du mode Pastis (le journal l'annonce aux lecteurs d'écran).
+          this.elBoisson = el('div', { class: 'bulle-boisson', 'aria-hidden': 'true', hidden: true })),
         el('aside', { class: 'barre-laterale' },
           el('section', { class: 'commandes', 'aria-label': 'Actions du tour' },
             this.elConnexion = el('p', { class: 'alerte bandeau-connexion', role: 'status', hidden: true }),
@@ -103,6 +109,9 @@ export class Controleur {
       if (possibles.includes('finirTour')) bouton('Finir le tour ➜', () => this.agir({ type: 'finirTour' }), true);
       if (etat.attente || etat.dettes.length || etat.echange) bouton('Voir la décision en attente', () => this.demanderDecision());
       for (const b of this.boutonsGestion(possibles)) boutons.push(b);
+    }
+    if (this.pastis) {
+      boutons.push(el('button', { type: 'button', class: 'btn btn-discret', onclick: () => this.montrerReglesPastis() }, '🥃 Règles du mode Pastis'));
     }
     if (this.surQuitter) {
       boutons.push(el('button', { type: 'button', class: 'btn btn-discret', onclick: () => this.quitter() }, this.reseau ? 'Quitter la partie en ligne' : 'Abandonner la partie'));
@@ -294,6 +303,9 @@ export class Controleur {
         case 'faillite':
           this.notifier(`${etat.joueurs[ev.joueur].nom} fait faillite !`);
           break;
+        case 'boire':
+          await this.montrerBoisson(ev);
+          break;
         case 'journal':
           this.vue.majJournal(etat.journal.slice(0, ++lignesVisibles));
           break;
@@ -315,6 +327,29 @@ export class Controleur {
     } else {
       await ouvrirModale({ titre, contenu, boutons: [{ libelle: 'Compris !', valeur: true, principal: true }] });
     }
+  }
+
+  // Mode Pastis : bulle animée au-dessus du plateau.
+  async montrerBoisson(ev) {
+    const noms = ev.joueurs.map((id) => this.partie.etat.joueurs[id].nom);
+    const verbe = noms.length > 1 ? 'boivent' : 'boit';
+    this.elBoisson.className = `bulle-boisson ${ev.culSec ? 'cul-sec' : ''}`;
+    this.elBoisson.replaceChildren(
+      el('span', { class: 'verre' }, ev.culSec ? '🥃💥' : '🥃'),
+      el('strong', {}, `${listeNoms(noms)} ${verbe} ${libelleBoisson(ev)} !`),
+      el('small', {}, ev.raison));
+    this.elBoisson.hidden = false;
+    await attendre(1300 * this.facteur);
+    this.elBoisson.hidden = true;
+  }
+
+  montrerReglesPastis() {
+    ouvrirModale({
+      titre: '🥃 Règles du mode Pastis',
+      contenu: el('div', {}, el('ul', { class: 'liste-regles' }, REGLES_PASTIS.map((r) => el('li', {}, r))), el('p', { class: 'avertissement' }, AVERTISSEMENT_PASTIS)),
+      fermable: true,
+      boutons: [{ libelle: 'Santé !', valeur: null, principal: true }]
+    });
   }
 
   // Après chaque action : fin de partie, décision à demander, ou tour de l'ordinateur.
@@ -404,7 +439,9 @@ export class Controleur {
     const gagnant = etat.gagnant === null ? null : etat.joueurs[etat.gagnant];
     await ouvrirModale({
       titre: 'Fin de partie',
-      contenu: el('p', { class: 'victoire' }, gagnant ? `🏆 ${gagnant.nom} remporte la partie !` : 'La partie est terminée.'),
+      contenu: el('div', {},
+        el('p', { class: 'victoire' }, gagnant ? `🏆 ${gagnant.nom} remporte la partie !` : 'La partie est terminée.'),
+        this.pastis && plusGrosBuveur(etat) ? el('p', {}, `🥃 Plus grosse descente : ${plusGrosBuveur(etat).nom}, avec ${plusGrosBuveur(etat).gorgees} gorgées.`) : null),
       boutons: [{ libelle: 'Retour à l\'accueil', valeur: true, principal: true }]
     });
     this.arreter?.();

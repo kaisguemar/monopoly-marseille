@@ -95,6 +95,31 @@ Si vous devez plus que ce que vous avez, vous devez réunir la somme en revendan
 - **Double salaire sur Départ** : s'arrêter pile sur Départ rapporte 400 € au lieu de 200 €.
 - **Partie rapide** : la partie s'arrête à la fin du nombre de tours choisi ; le plus gros **patrimoine** l'emporte (argent + prix des propriétés, moins la valeur hypothécaire pour celles qui sont hypothéquées + constructions au prix d'achat).
 
+## Mode Pastis (jeu à boire, pour les adultes)
+
+À choisir avant la partie (« Mode de jeu » sur l'accueil, ou dans le salon en ligne par l'hôte). Toutes les règles ci-dessus s'appliquent, et l'on boit en plus :
+
+| Situation | Qui boit | Combien |
+|---|---|---|
+| Payer un loyer sur un terrain | celui qui paie | 1 gorgée (terrain nu), 2 (quartier complet), 2 à 5 (1 à 4 maisons), cul sec (hôtel) |
+| Payer un loyer sur une station de métro | celui qui paie | 1 gorgée par station du propriétaire |
+| Payer chez Jeannot / au Viaghji | celui qui paie | 2 / 3 gorgées |
+| Faire un double | les autres joueurs | 1 gorgée |
+| Trois doubles d'affilée | celui qui lance | cul sec (et Baumettes) |
+| Partir aux Baumettes | celui qui y va | 3 gorgées |
+| Rater un essai pour sortir des Baumettes | le prisonnier | 1 gorgée |
+| Station Total / Tunnel Prado-Carénage | celui qui s'y arrête | 2 / 1 gorgée(s) |
+| S'arrêter pile sur Départ | les autres joueurs | 1 gorgée |
+| Trottoir gratuit du Jarret | tout le monde | 1 gorgée (tournée générale) |
+| Compléter un quartier (achat ou enchère) | les autres joueurs | 2 gorgées |
+| Faire faillite | le joueur en faillite | cul sec |
+
+Dans chaque pioche, 5 cartes sont remplacées par des cartes à boire : celui qui tire boit, ou tout le monde, ou les autres, ou le joueur suivant ou précédent. Les cartes « sortie des Baumettes » ne sont jamais remplacées.
+
+Un cul sec compte pour 5 gorgées dans le compteur de chaque joueur ; la fin de partie annonce la plus grosse descente.
+
+Une gorgée peut être d'eau, de sirop ou de pastis bien allongé. Buvez avec modération, et ne prenez pas le volant après la partie.
+
 ## Les cartes
 
 Les cartes reprennent les effets du jeu original, dans une ambiance marseillaise : avancer jusqu'à une case (et toucher 200 € en passant par Départ), reculer de trois cases, aller aux Baumettes, en sortir, payer ou recevoir de l'argent, payer des réparations par maison et par hôtel, recevoir 10 € de chaque joueur pour son anniversaire, ou choisir entre une amende de 10 € et une carte Chance.

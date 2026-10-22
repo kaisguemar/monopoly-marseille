@@ -38,11 +38,12 @@ node --test
 
 - les données, le moteur de règles et l'IA, y compris des parties complètes simulées entre ordinateurs ;
 - le **mode en ligne** : salon d'attente et droits de l'hôte, impossibilité de jouer à la place d'un autre, diffusion des mises à jour, déconnexion et reconnexion (rechargement, coupure, autre appareil), remplacement par l'ordinateur et retour du joueur, sauvegarde et redémarrage du serveur ;
+- le **mode Pastis** : gorgées de chaque règle, cartes à boire et remplacement des cartes, parties complètes entre ordinateurs, et partie en ligne où tous les écrans reçoivent les mêmes gorgées ;
 - le **serveur HTTP réel** : fichiers servis (et ceux qui ne doivent pas l'être), API, flux SSE, et des parties complètes jouées de bout en bout par des clients qui ne communiquent que par HTTP, avec coupures réseau en cours de partie.
 
 ## Comment jouer
 
-1. Sur l'écran d'accueil, pour une partie sur un même écran, choisissez le nombre de joueurs, leurs noms, leurs pions (pointu, ballon, cigale, savon de Marseille, navette, sardine) et s'ils sont humains ou ordinateurs. Cochez éventuellement des règles de la maison et la vitesse d'animation.
+1. Sur l'écran d'accueil, choisissez le **mode de jeu** : **Classique** ou **Pastis** (voir plus bas). Pour une partie sur un même écran, choisissez ensuite le nombre de joueurs, leurs noms, leurs pions (pointu, ballon, cigale, savon de Marseille, navette, sardine) et s'ils sont humains ou ordinateurs. Cochez éventuellement des règles de la maison et la vitesse d'animation.
 2. Cliquez sur **Nouvelle partie** (ou **Reprendre la partie** si une sauvegarde existe).
 3. À votre tour : **Lancer les dés**, puis répondez aux fenêtres (achat, carte, dette…), et **Finir le tour**. Les boutons de la colonne de droite permettent de construire, d'hypothéquer et de proposer des échanges.
 4. Cliquez sur une case du plateau (ou sur une propriété dans un panneau joueur) pour afficher sa fiche : prix, loyers, propriétaire.
@@ -50,6 +51,20 @@ node --test
 Le jeu se joue entièrement au clavier : le bouton d'action principal reçoit le focus à chaque tour (Entrée pour lancer les dés), les fenêtres gardent le focus et se ferment avec Échap quand c'est possible.
 
 Les règles complètes sont dans [`docs/REGLES.md`](docs/REGLES.md).
+
+### Le mode Pastis (jeu à boire)
+
+Un mode de jeu pour les adultes, à choisir avant de lancer la partie, sur l'accueil comme dans un salon en ligne (c'est l'hôte qui choisit). Le plateau passe en jaune soleil et bleu roi, avec les mêmes noms de cases et les mêmes règles de Monopoly, auxquelles s'ajoutent des gorgées :
+
+- loyer : 1 gorgée sur un terrain nu, 2 si le propriétaire a tout le quartier, 1 de plus par maison, cul sec sur un hôtel ; stations de métro : autant de gorgées que de stations du propriétaire ; Chez Jeannot : 2 ; Le Viaghji : 3 ;
+- double : les autres boivent 1 gorgée ; trois doubles : cul sec et Baumettes ;
+- Baumettes : 3 gorgées en y entrant, 1 par essai raté pour en sortir ;
+- Station Total : 2 gorgées, Tunnel Prado-Carénage : 1 ;
+- pile sur Départ : les autres boivent 1 gorgée ; Trottoir gratuit du Jarret : tournée générale, 1 gorgée pour tout le monde ;
+- compléter un quartier : les autres boivent 2 gorgées ; faillite : cul sec ;
+- 5 cartes Chance et 5 cartes Caisse de communauté sont remplacées par des cartes à boire (tournée générale, cul sec, le joueur suivant ou précédent boit…).
+
+Chaque gorgée s'affiche dans une bulle au centre du plateau et dans le journal. Chaque joueur a son compteur, et la fin de partie annonce la « plus grosse descente ». Le jeu rappelle qu'une gorgée peut être d'eau ou de sirop, et qu'on ne prend pas le volant après.
 
 ## Le plateau marseillais
 
@@ -105,6 +120,13 @@ Le cahier des charges laisse quelques points ouverts. Voici les choix retenus, l
 - On ne peut plus rejoindre une partie commencée, sauf pour reprendre sa propre place (même jeton, ou même nom si le joueur est déconnecté).
 - Le serveur attend la fin des animations (dés, déplacements, cartes) avant de faire rejouer un ordinateur, pour que tout le monde puisse suivre.
 
+**Mode Pastis**
+- Le thème reprend les couleurs de l'apéritif marseillais (jaune et bleu, soleil rayonnant), sans logo ni nom de marque.
+- Les couleurs des quartiers ne changent pas, pour que le plateau reste lisible.
+- Les gorgées sont calculées par le moteur, comme l'argent : elles sont identiques sur tous les écrans en ligne et sauvegardées avec la partie. Un cul sec compte pour 5 gorgées dans le total.
+- Les ordinateurs « boivent » aussi : leurs compteurs servent à animer la partie, à chacun de décider si un humain boit pour eux.
+- Les gorgées ne demandent aucune décision : la partie avance au même rythme qu'en mode classique. Le serveur laisse le temps d'afficher chaque bulle avant de faire jouer un ordinateur.
+
 **Ordinateurs et interface**
 - L'IA propose au plus un échange par tour, et seulement un tour sur trois, pour ne pas harceler les humains.
 - Les actions de l'ordinateur sont temporisées (de 0,25 s à 1,2 s selon la vitesse choisie) et attendent qu'une fenêtre ouverte par un humain soit fermée.
@@ -128,6 +150,7 @@ src/
     alea.js             dés et mélange déterministes (graine dans l'état)
     ia.js               décisions des joueurs ordinateur
     donnees.js          validation de plateau.json et cartes.json
+    pastis.js           mode Pastis : calcul des gorgées, cartes à boire, règles affichées
   reseau/
     client.js           client du mode en ligne : API, flux SSE, session et reconnexion
   ui/                   affichage
@@ -144,10 +167,10 @@ src/
     modale.js           fenêtres modales accessibles
     pions.js            pions marseillais en SVG
     utilitaires.js      outils DOM
-  styles/               base.css, plateau.css, interface.css
+  styles/               base.css, plateau.css, interface.css, pastis.css (choix du mode et thème Pastis)
 data/
   plateau.json          les 40 cases et les 8 quartiers
-  cartes.json           16 cartes Chance + 16 cartes Caisse de communauté
+  cartes.json           16 cartes Chance + 16 cartes Caisse de communauté, et les 10 cartes du mode Pastis
 assets/                 icône du jeu
 tests/                  tests unitaires et d'intégration (node --test)
 docs/                   cahier des charges et règles du jeu
@@ -204,5 +227,6 @@ Actions disponibles : `lancer`, `acheter`, `refuserAchat`, `encherir`, `passerEn
 - [x] Pas d'enchère quand on refuse d'acheter
 - [x] Animation 3D du lancer de dés
 - [x] Multijoueur en ligne avec reconnexion
+- [x] Mode Pastis : thème jaune et bleu, gorgées et cartes à boire, en local comme en ligne
 
 Idées pour la suite : sons (cigales, sirène du port), statistiques de fin de partie, chat dans le salon.

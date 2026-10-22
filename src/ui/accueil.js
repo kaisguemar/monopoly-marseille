@@ -1,5 +1,6 @@
 // Écran d'accueil : configuration des joueurs, des règles et lancement / reprise de partie.
-import { el } from './utilitaires.js';
+import { el, appliquerTheme } from './utilitaires.js';
+import { REGLES_PASTIS, AVERTISSEMENT_PASTIS } from '../moteur/pastis.js';
 import { PIONS, svgPion, COULEURS_JOUEURS } from './pions.js';
 import { stockageDisponible } from './sauvegarde.js';
 
@@ -13,7 +14,7 @@ export function afficherAccueil(racine, { sauvegarde, surNouvellePartie, surRepr
   const config = {
     joueurs: NOMS.map((nom, i) => ({ nom, pion: PIONS[i].id, ia: i > 0 })),
     nombre: 2,
-    options: { parcGratuit: false, doubleDepart: false, partieRapide: false, toursMax: 20 },
+    options: { parcGratuit: false, doubleDepart: false, partieRapide: false, toursMax: 20, pastis: false },
     vitesse: 'normale'
   };
 
@@ -56,6 +57,7 @@ export function afficherAccueil(racine, { sauvegarde, surNouvellePartie, surRepr
 
   const formulaire = el('form', { class: 'formulaire-accueil', 'aria-labelledby': 'titre-config' },
     el('h2', { id: 'titre-config' }, 'Nouvelle partie sur cet écran'),
+    choixModeDeJeu(config.options.pastis, (pastis) => { config.options.pastis = pastis; }),
     el('fieldset', {},
       el('legend', {}, 'Joueurs'),
       el('label', { class: 'champ champ-ligne' }, el('span', {}, 'Nombre de joueurs '),
@@ -94,6 +96,7 @@ export function afficherAccueil(racine, { sauvegarde, surNouvellePartie, surRepr
 
   const blocEnLigne = sectionEnLigne(enLigne);
 
+  appliquerTheme(false);
   racine.replaceChildren(el('div', { class: 'accueil' },
     el('header', { class: 'accueil-entete' },
       el('div', { class: 'logo logo-accueil', 'aria-hidden': 'true' },
@@ -114,6 +117,33 @@ export function afficherAccueil(racine, { sauvegarde, surNouvellePartie, surRepr
     || blocReprise?.querySelector('button')
     || formulaire.querySelector('input');
   cibleFocus?.focus();
+}
+
+// Choix du mode de jeu : Classique ou Pastis (jeu à boire). Le thème de la page suit le choix.
+// `modifiable` à false : simple affichage (invité d'un salon en ligne).
+export function choixModeDeJeu(pastis, surChanger, modifiable = true) {
+  const nom = `mode-${Math.random().toString(36).slice(2, 8)}`;
+  const regles = el('details', { class: 'regles-pastis', hidden: !pastis },
+    el('summary', {}, '🥃 Règles du mode Pastis'),
+    el('ul', {}, REGLES_PASTIS.map((r) => el('li', {}, r))),
+    el('p', { class: 'avertissement' }, AVERTISSEMENT_PASTIS));
+  const choix = (valeur, titre, aide) => el('label', { class: `choix-mode ${valeur ? 'choix-pastis' : ''}` },
+    el('input', {
+      type: 'radio', name: nom, value: valeur ? 'pastis' : 'classique', checked: pastis === valeur, disabled: !modifiable,
+      onchange: () => {
+        regles.hidden = !valeur;
+        appliquerTheme(valeur);
+        surChanger(valeur);
+      }
+    }),
+    el('span', {}, el('strong', {}, titre), el('small', {}, aide)));
+  appliquerTheme(pastis);
+  return el('fieldset', { class: 'mode-de-jeu' },
+    el('legend', {}, 'Mode de jeu'),
+    el('div', { class: 'choix-modes' },
+      choix(false, '⛵ Classique', 'Le Monopoly marseillais, tout simplement.'),
+      choix(true, '🥃 Pastis', 'Plateau jaune et bleu, et on boit des gorgées à chaque loyer, double ou passage aux Baumettes. Pour les adultes !')),
+    regles);
 }
 
 // Section « Jouer en ligne » : créer un salon, en rejoindre un, ou reprendre sa place.

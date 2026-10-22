@@ -54,6 +54,7 @@ export function rendrePanneaux(racine, partie, { surClicCase, moi = null, salon 
         el('span', { class: 'argent' }, euros(j.argent))),
       statut.length ? el('p', { class: 'statut' }, statut.join(' · ')) : null,
       peutRemplacer ? el('button', { type: 'button', class: 'btn btn-petit', onclick: () => surRemplacer(j.id) }, "🤖 Faire jouer l'ordinateur à sa place") : null,
+      etat.options.pastis ? el('p', { class: 'compteur-gorgees' }, `🥃 ${j.gorgees ?? 0} gorgée${(j.gorgees ?? 0) > 1 ? 's' : ''}${j.culsSecs ? ` dont ${j.culsSecs} cul${j.culsSecs > 1 ? 's' : ''} sec${j.culsSecs > 1 ? 's' : ''}` : ''}`) : null,
       j.cartesSortie.length ? el('p', { class: 'cartes-speciales' }, `🎟️ ${j.cartesSortie.length} carte(s) « sortie des Baumettes »`) : null,
       listes.length ? el('ul', { class: 'proprietes-joueur' }, listes) : el('p', { class: 'vide' }, 'Aucune propriété'));
   }));

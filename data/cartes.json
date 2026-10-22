@@ -34,5 +34,21 @@
     { "id": "communaute-14", "texte": "Votre livret d'épargne vous rapporte des intérêts : recevez 25 €.", "effet": { "type": "recevoir", "montant": 25 } },
     { "id": "communaute-15", "texte": "Vous héritez de la recette secrète de bouillabaisse de votre grand-tante… et de 100 €.", "effet": { "type": "recevoir", "montant": 100 } },
     { "id": "communaute-16", "texte": "Deuxième prix du concours de chants de supporters au Vélodrome : recevez 10 €.", "effet": { "type": "recevoir", "montant": 10 } }
-  ]
+  ],
+  "pastis": {
+    "chance": [
+      { "id": "pastis-chance-01", "remplace": "chance-11", "texte": "L'apéro sur la Corniche s'éternise au coucher du soleil : buvez 3 gorgées.", "effet": { "type": "boire", "cible": "moi", "gorgees": 3 } },
+      { "id": "pastis-chance-02", "remplace": "chance-12", "texte": "Vous avez mis trop d'eau dans votre pastis, c'est une honte : cul sec pour vous apprendre !", "effet": { "type": "boire", "cible": "moi", "culSec": true } },
+      { "id": "pastis-chance-03", "remplace": "chance-13", "texte": "Vous garez le scooter en double file devant le bar : le joueur suivant boit 2 gorgées pour vous excuser.", "effet": { "type": "boire", "cible": "suivant", "gorgees": 2 } },
+      { "id": "pastis-chance-04", "remplace": "chance-14", "texte": "Tournée générale au bar du Vieux-Port ! Tout le monde boit 1 gorgée.", "effet": { "type": "boire", "cible": "tous", "gorgees": 1 } },
+      { "id": "pastis-chance-05", "remplace": "chance-16", "texte": "Vous mettez fanny tous vos adversaires à la pétanque : les autres joueurs boivent 2 gorgées.", "effet": { "type": "boire", "cible": "autres", "gorgees": 2 } }
+    ],
+    "communaute": [
+      { "id": "pastis-communaute-01", "remplace": "communaute-04", "texte": "Anniversaire surprise au cabanon ! Tous les autres joueurs lèvent leur verre et boivent 2 gorgées à votre santé.", "effet": { "type": "boire", "cible": "autres", "gorgees": 2 } },
+      { "id": "pastis-communaute-02", "remplace": "communaute-10", "texte": "Le joueur précédent vous a piqué votre jaune pendant que vous aviez le dos tourné : il boit 2 gorgées.", "effet": { "type": "boire", "cible": "precedent", "gorgees": 2 } },
+      { "id": "pastis-communaute-03", "remplace": "communaute-11", "texte": "Mauresque, perroquet ou tomate ? Vous hésitez depuis dix minutes : cul sec !", "effet": { "type": "boire", "cible": "moi", "culSec": true } },
+      { "id": "pastis-communaute-04", "remplace": "communaute-14", "texte": "Partie de belote qui dégénère au cabanon : tous les joueurs boivent 1 gorgée.", "effet": { "type": "boire", "cible": "tous", "gorgees": 1 } },
+      { "id": "pastis-communaute-05", "remplace": "communaute-16", "texte": "Vous chantez trop fort dans le virage Sud du Vélodrome : buvez 2 gorgées pour vous rafraîchir la voix.", "effet": { "type": "boire", "cible": "moi", "gorgees": 2 } }
+    ]
+  }
 }

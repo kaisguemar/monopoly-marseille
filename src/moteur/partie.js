@@ -15,6 +15,9 @@ import {
   estAchetable, calculerLoyer, compterConstructions, casesDuGroupe, casesSoeurs, possedeGroupe,
   proprietesDe, coutLevee, patrimoine, valeurLiquidable
 } from './regles.js';
+import {
+  CUL_SEC, boissonLoyer, boissonTaxe, ciblesBoisson, libelleBoisson, listeNoms, piochesPastis, plusGrosBuveur
+} from './pastis.js';
 
 export class ErreurRegle extends Error {}
 
@@ -26,14 +29,18 @@ export const OPTIONS_PAR_DEFAUT = {
   parcGratuit: false,   // taxes et amendes déposées sur le Trottoir gratuit
   doubleDepart: false,  // 400 € en s'arrêtant pile sur Départ
   partieRapide: false,  // limite de tours, victoire au patrimoine
-  toursMax: 20
+  toursMax: 20,
+  pastis: false         // mode Pastis : jeu à boire (voir pastis.js)
 };
 
 export class Partie {
   constructor(donnees, etat) {
     this.plateau = donnees.plateau;
     this.cartes = donnees.cartes;
-    this.cartesParId = new Map([...donnees.cartes.chance, ...donnees.cartes.communaute].map((c) => [c.id, c]));
+    const pastis = donnees.cartes.pastis ?? {};
+    this.cartesParId = new Map([
+      ...donnees.cartes.chance, ...donnees.cartes.communaute, ...(pastis.chance ?? []), ...(pastis.communaute ?? [])
+    ].map((c) => [c.id, c]));
     this.etat = etat;
     this.evenements = [];
   }
@@ -46,10 +53,11 @@ export class Partie {
     for (const c of donnees.plateau.cases) {
       if (estAchetable(c)) proprietes[c.index] = { proprietaire: null, maisons: 0, hypotheque: false };
     }
+    const options = { ...OPTIONS_PAR_DEFAUT, ...config.options };
     const etat = {
       version: 1,
       graine: (config.graine ?? graineAleatoire()) >>> 0,
-      options: { ...OPTIONS_PAR_DEFAUT, ...config.options },
+      options,
       joueurs: liste.map((j, id) => ({
         id,
         nom: (j.nom || `Joueur ${id + 1}`).trim(),
@@ -60,11 +68,13 @@ export class Partie {
         enPrison: false,
         toursPrison: 0,
         cartesSortie: [],
-        faillite: false
+        faillite: false,
+        gorgees: 0,
+        culsSecs: 0
       })),
       proprietes,
       banque: { maisons: STOCK_MAISONS, hotels: STOCK_HOTELS },
-      pioches: {
+      pioches: options.pastis ? piochesPastis(donnees.cartes) : {
         chance: donnees.cartes.chance.map((c) => c.id),
         communaute: donnees.cartes.communaute.map((c) => c.id)
       },
@@ -89,6 +99,7 @@ export class Partie {
     melanger(etat, etat.pioches.communaute);
     const partie = new Partie(donnees, etat);
     partie.log(`La partie commence ! ${etat.joueurs.map((j) => j.nom).join(', ')} prennent place autour du Vieux-Port.`);
+    if (options.pastis) partie.log('🥃 Mode Pastis : sortez les verres, l\'eau fraîche et les glaçons. Santé !');
     return partie;
   }
 
@@ -213,6 +224,8 @@ export class Partie {
     e.attente = null;
     e.echange = null;
     this.log(gagnantId === null ? 'La partie est terminée.' : `🏆 ${this.joueur(gagnantId).nom} remporte la partie ! Fan de chichourle, quel champion !`);
+    const buveur = e.options.pastis ? plusGrosBuveur(e) : null;
+    if (buveur) this.log(`🥃 Plus grosse descente de la partie : ${buveur.nom}, avec ${buveur.gorgees} gorgées.`);
     this.emettre({ type: 'fin', gagnant: gagnantId });
   }
 
@@ -267,6 +280,36 @@ export class Partie {
   }
 
   // ---------------------------------------------------------------------------
+  // Mode Pastis
+  // ---------------------------------------------------------------------------
+
+  // Fait boire des joueurs (sans effet hors mode Pastis). boisson : { gorgees } ou { culSec: true }.
+  boire(ids, boisson, raison) {
+    if (!this.etat.options.pastis) return;
+    const buveurs = ids.map((id) => this.joueur(id)).filter((j) => j && !j.faillite);
+    if (!buveurs.length) return;
+    for (const j of buveurs) {
+      j.gorgees = (j.gorgees ?? 0) + (boisson.culSec ? CUL_SEC : boisson.gorgees);
+      if (boisson.culSec) j.culsSecs = (j.culsSecs ?? 0) + 1;
+    }
+    const pluriel = buveurs.length > 1;
+    this.emettre({ type: 'boire', joueurs: buveurs.map((j) => j.id), gorgees: boisson.gorgees ?? 0, culSec: !!boisson.culSec, raison });
+    this.log(`🥃 ${listeNoms(buveurs.map((j) => j.nom))} ${pluriel ? 'boivent' : 'boit'} ${libelleBoisson(boisson)} (${raison}).`);
+  }
+
+  autresJoueurs(joueurId) {
+    return this.joueursEnJeu().filter((j) => j.id !== joueurId).map((j) => j.id);
+  }
+
+  // Un quartier vient d'être complété : les autres joueurs arrosent ça.
+  arroserQuartier(joueurId, index) {
+    const c = this.plateau.cases[index];
+    if (c.type === 'propriete' && possedeGroupe(this.etat, this.plateau, joueurId, c.groupe)) {
+      this.boire(this.autresJoueurs(joueurId), { gorgees: 2 }, `${this.joueur(joueurId).nom} complète le quartier ${this.plateau.groupes[c.groupe].nom}`);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Dés, déplacements et prison
   // ---------------------------------------------------------------------------
 
@@ -291,6 +334,7 @@ export class Partie {
         j.toursPrison++;
         if (j.toursPrison < 3) {
           this.log(`${j.nom} reste aux Baumettes (essai ${j.toursPrison}/3).`);
+          this.boire([joueur], { gorgees: 1 }, 'essai raté aux Baumettes');
           return;
         }
         this.log(`${j.nom} a raté son troisième essai : ${AMENDE_PRISON} € à payer pour sortir.`);
@@ -306,10 +350,12 @@ export class Partie {
       e.doubles++;
       if (e.doubles === 3) {
         this.log(`Trois doubles d'affilée ! ${j.nom} file aux Baumettes.`);
-        this.envoyerEnPrison(joueur);
+        this.boire([joueur], { culSec: true }, 'trois doubles d\'affilée');
+        this.envoyerEnPrison(joueur, false);
         return;
       }
       e.peutRejouer = true;
+      this.boire(this.autresJoueurs(joueur), { gorgees: 1 }, `double de ${j.nom}`);
     }
     this.deplacer(joueur, d1 + d2);
   }
@@ -320,7 +366,8 @@ export class Partie {
     this.log(`${j.nom} sort des Baumettes ${comment}.`);
   }
 
-  envoyerEnPrison(joueurId) {
+  // `boisson` : en mode Pastis, partir aux Baumettes coûte 3 gorgées (sauf si un cul sec vient d'être bu).
+  envoyerEnPrison(joueurId, boisson = true) {
     const e = this.etat;
     const j = this.joueur(joueurId);
     const depart = j.position;
@@ -331,6 +378,7 @@ export class Partie {
     e.doubles = 0;
     this.emettre({ type: 'teleportation', joueur: joueurId, de: depart, vers: CASE_PRISON });
     this.log(`${j.nom} part aux Baumettes.`);
+    if (boisson) this.boire([joueurId], { gorgees: 3 }, 'direction les Baumettes');
   }
 
   aPayerPrison({ joueur }) {
@@ -406,12 +454,14 @@ export class Partie {
           const proprio = this.joueur(p.proprietaire);
           this.log(`${j.nom} arrive sur ${c.nom} et doit ${loyer} € de loyer à ${proprio.nom}.`);
           this.payer(joueurId, loyer, proprio.id, `loyer de ${c.nom}`);
+          this.boire([joueurId], boissonLoyer(e, this.plateau, c.index), `loyer de ${c.nom}`);
         }
         break;
       }
       case 'taxe':
         this.log(`${j.nom} tombe sur « ${c.nom} » : ${c.montant} € à payer.`);
         this.payer(joueurId, c.montant, this.destinationAmendes, c.nom);
+        this.boire([joueurId], boissonTaxe(c.montant), c.nom);
         break;
       case 'chance':
       case 'communaute':
@@ -429,6 +479,10 @@ export class Partie {
         } else {
           this.log(`${j.nom} se gare tranquillement sur le trottoir du Jarret.`);
         }
+        this.boire(this.joueursEnJeu().map((x) => x.id), { gorgees: 1 }, 'tournée générale sur le trottoir du Jarret');
+        break;
+      case 'depart':
+        this.boire(this.autresJoueurs(joueurId), { gorgees: 1 }, `${j.nom} s'arrête pile sur Départ`);
         break;
       case 'prison':
         this.log(`${j.nom} est en simple visite aux Baumettes.`);
@@ -489,6 +543,9 @@ export class Partie {
       case 'amende_ou_chance':
         this.etat.attente = { type: 'choix_amende', joueur: joueurId, montant: effet.montant };
         break;
+      case 'boire':
+        this.boire(ciblesBoisson(this.etat, joueurId, effet.cible), effet.culSec ? { culSec: true } : { gorgees: effet.gorgees }, 'carte');
+        break;
       default:
         refuser(`Effet de carte inconnu : ${effet.type}`);
     }
@@ -522,6 +579,7 @@ export class Partie {
     this.etat.attente = null;
     this.emettre({ type: 'argent', joueur, montant: -c.prix });
     this.log(`${j.nom} achète ${c.nom} pour ${c.prix} €.`);
+    this.arroserQuartier(joueur, c.index);
   }
 
   aRefuserAchat({ joueur }) {
@@ -585,6 +643,7 @@ export class Partie {
       e.proprietes[a.case].proprietaire = j.id;
       this.emettre({ type: 'argent', joueur: j.id, montant: -a.mise });
       this.log(`Adjugé ! ${j.nom} remporte ${this.nomCase(a.case)} pour ${a.mise} €.`);
+      this.arroserQuartier(j.id, a.case);
     }
   }
 
@@ -750,6 +809,7 @@ export class Partie {
   faillite(id, creancier) {
     const e = this.etat;
     const j = this.joueur(id);
+    this.boire([id], { culSec: true }, 'faillite');
     // Les constructions sont revendues à la banque à moitié prix.
     for (const i of proprietesDe(e, id)) {
       const p = e.proprietes[i];

@@ -77,6 +77,6 @@ test('la validation détecte les données incorrectes', () => {
   assert.ok(validerPlateau({ cases: [] }).length > 0);
   const casse = structuredClone(cartes);
   casse.chance[0].effet = { type: 'inconnu' };
-  casse.communaute.pop();
+  casse.communaute.splice(14, 1); // communaute-15, qu'aucune carte Pastis ne remplace
   assert.equal(validerCartes(casse).length, 2);
 });
