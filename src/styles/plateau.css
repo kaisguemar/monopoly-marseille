@@ -40,7 +40,11 @@
   width: calc(100% + .4em); min-height: 2.3em; margin: 0 -.2em;
   font-size: .78em; font-weight: 700; letter-spacing: .02em; text-transform: uppercase;
 }
-.case .bandeau-nom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; padding: 0 .2em; }
+/* Les noms de quartier trop longs passent sur deux lignes plutôt que d'être coupés. */
+.case .bandeau-nom {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+  overflow: hidden; max-width: 100%; padding: 0 .2em; line-height: 1.05; text-align: center;
+}
 .case .constructions { font-size: 1.1em; line-height: 1; letter-spacing: -.15em; }
 .case .contenu { display: flex; flex-direction: column; align-items: center; gap: .15em; min-width: 0; padding-top: .2em; }
 .case .nom { font-weight: 600; overflow-wrap: break-word; hyphens: auto; max-width: 100%; }

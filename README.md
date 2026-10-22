@@ -1,6 +1,6 @@
 # Monopoly Marseille
 
-Version marseillaise du Monopoly, jouable entièrement dans le navigateur, en français. De 2 à 6 joueurs, sur le même écran ou chacun chez soi en ligne, humains ou ordinateurs. De Frais-Vallon au Vieux-Port, en passant par le Cours Julien, la Canebière et la Corniche Kennedy : achetez Marseille quartier par quartier !
+Version marseillaise du Monopoly, jouable entièrement dans le navigateur, en français. De 2 à 6 joueurs, sur le même écran ou chacun chez soi en ligne, humains ou ordinateurs. De Saint-Loup au Vieux-Port, en passant par le Cours Julien, la Canebière et la Corniche Kennedy : achetez Marseille quartier par quartier !
 
 - Règles du Monopoly français (constructions uniformes, hypothèques, échanges, faillite), sans enchère quand on refuse d'acheter.
 - 40 cases marseillaises et 32 cartes réécrites avec le mistral, l'OM, la Bonne Mère, les calanques…
@@ -55,9 +55,9 @@ Les règles complètes sont dans [`docs/REGLES.md`](docs/REGLES.md).
 
 | Quartier (couleur) | Propriétés | Prix |
 | --- | --- | --- |
-| Le Charbon (marron) | Frais-Vallon, Malpassé | 60 € |
-| Le Charbon (bleu ciel) | La Castellane, Fond Vert, Château Saint-Loup | 100–120 € |
-| Le Troubadour – Cours Julien (violet) | Notre-Dame-du-Mont, Cours Julien, La Plaine | 140–160 € |
+| Charbon Sud (marron) | Château Saint-Loup, Benza | 60 € |
+| Charbon Nord (bleu ciel) | Fond Vert, Frais-Vallon, Malpassé | 100–120 € |
+| Troubadour (violet) | Notre-Dame-du-Mont, Cours Julien, La Plaine | 140–160 € |
 | Centre-ville (orange) | Rue de Rome, Rue Saint-Ferréol, La Canebière | 180–200 € |
 | Endoume (rouge) | Rue d'Endoume, Vallon des Auffes, Malmousque | 220–240 € |
 | Prado – Castellane (jaune) | Place Castellane, Avenue du Prado, Parc Borély | 260–280 € |
@@ -77,8 +77,8 @@ Le cahier des charges laisse quelques points ouverts. Voici les choix retenus, l
 
 **Structure et contenu**
 - `index.html` a été déplacé de `src/` vers la racine, comme le demande la structure attendue du cahier des charges.
-- La prison est **Les Baumettes** et le Parc gratuit le **Trottoir gratuit du Jarret**. Les quartiers regroupent des lieux voisins ; les deux premiers groupes, « Le Charbon » (Frais-Vallon, Malpassé, puis La Castellane, Fond Vert, Château Saint-Loup), sont des quartiers Nord et Est, et le plateau monte jusqu'au bord de mer. Les deux groupes portent le même nom de quartier, à la demande des joueurs ; leurs couleurs les distinguent. La case « La Castellane » (bleu ciel, cité des quartiers Nord) ne doit pas être confondue avec la « Place Castellane » (jaune).
-- Les cartes qui envoient vers une case précise sont transposées case pour case : Avenue Henri-Martin → Malmousque, Boulevard de la Villette → Notre-Dame-du-Mont, Gare de Lyon → Station Dromel, Rue de la Paix → Vieux-Port, Boulevard de Belleville → Frais-Vallon.
+- La prison est **Les Baumettes** et le Parc gratuit le **Trottoir gratuit du Jarret**. Les quartiers regroupent des lieux voisins ; les deux premiers groupes sont le « Charbon Sud » (Château Saint-Loup, Benza) et le « Charbon Nord » (Fond Vert, Frais-Vallon, Malpassé), et le plateau monte jusqu'au bord de mer.
+- Les cartes qui envoient vers une case précise sont transposées case pour case : Avenue Henri-Martin → Malmousque, Boulevard de la Villette → Notre-Dame-du-Mont, Gare de Lyon → Station Dromel, Rue de la Paix → Vieux-Port, Boulevard de Belleville → Château Saint-Loup.
 - Le logo « Monopoly Marseille » est dessiné avec des polices système (aucun logo, mascotte ni typographie de la marque).
 
 **Règles de jeu**
@@ -200,7 +200,7 @@ Actions disponibles : `lancer`, `acheter`, `refuserAchat`, `encherir`, `passerEn
 
 Évolutions :
 
-- [x] Renommages marseillais : Les Baumettes, Trottoir gratuit du Jarret, Station Total, Tunnel Prado-Carénage, Le Viaghji, Chez Jeannot, La Plaine, Le Charbon, Le Troubadour, Château Saint-Loup, Station Dromel
+- [x] Renommages marseillais : Les Baumettes, Trottoir gratuit du Jarret, Station Total, Tunnel Prado-Carénage, Le Viaghji, Chez Jeannot, La Plaine, Charbon Sud et Charbon Nord, Troubadour, Château Saint-Loup, Benza, Station Dromel
 - [x] Pas d'enchère quand on refuse d'acheter
 - [x] Animation 3D du lancer de dés
 - [x] Multijoueur en ligne avec reconnexion

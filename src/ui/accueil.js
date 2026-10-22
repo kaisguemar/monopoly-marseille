@@ -99,7 +99,7 @@ export function afficherAccueil(racine, { sauvegarde, surNouvellePartie, surRepr
       el('div', { class: 'logo logo-accueil', 'aria-hidden': 'true' },
         el('span', { class: 'logo-soleil' }), el('span', { class: 'logo-titre' }, 'Monopoly'), el('span', { class: 'logo-ville' }, 'Marseille'), el('span', { class: 'logo-vagues' }, '〰〰〰')),
       el('h1', { class: 'visuellement-cache' }, 'Monopoly Marseille'),
-      el('p', { class: 'accroche' }, 'De Frais-Vallon à la Corniche, achetez Marseille quartier par quartier ! De 2 à 6 joueurs, sur le même écran ou à distance, humains ou ordinateurs.'),
+      el('p', { class: 'accroche' }, 'De Saint-Loup à la Corniche, achetez Marseille quartier par quartier ! De 2 à 6 joueurs, sur le même écran ou à distance, humains ou ordinateurs.'),
       el('div', { class: 'pions-accueil', 'aria-hidden': 'true' }, PIONS.map((p) => el('span', { class: 'avatar', title: p.nom, html: svgPion(p.id, 36) })))),
     enLigne.message ? el('p', { class: 'alerte', role: 'alert' }, enLigne.message) : null,
     blocReprise,

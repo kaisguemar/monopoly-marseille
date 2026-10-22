@@ -24,7 +24,7 @@
     { "id": "communaute-04", "texte": "Vos savons de Marseille s'arrachent au marché : recevez 50 €.", "effet": { "type": "recevoir", "montant": 50 } },
     { "id": "communaute-05", "texte": "La Bonne Mère veille sur vous : vous êtes libéré des Baumettes. Cette carte peut être conservée ou échangée.", "effet": { "type": "sortie_prison" } },
     { "id": "communaute-06", "texte": "Pris à pêcher dans le Vieux-Port sans permis : allez directement aux Baumettes, sans passer par la case Départ ni recevoir 200 €.", "effet": { "type": "prison" } },
-    { "id": "communaute-07", "texte": "Vous avez oublié votre cabas : retournez à Frais-Vallon (sans passer par la case Départ).", "effet": { "type": "aller_a", "case": 1, "recul": true } },
+    { "id": "communaute-07", "texte": "Vous avez oublié votre cabas : retournez à Château Saint-Loup (sans passer par la case Départ).", "effet": { "type": "aller_a", "case": 1, "recul": true } },
     { "id": "communaute-08", "texte": "Votre revenu annuel tombe enfin : recevez 100 €.", "effet": { "type": "recevoir", "montant": 100 } },
     { "id": "communaute-09", "texte": "C'est votre anniversaire, et chacun vous offre une boîte de navettes : chaque joueur vous donne 10 €.", "effet": { "type": "anniversaire", "montant": 10 } },
     { "id": "communaute-10", "texte": "Les impôts vous remboursent un trop-perçu : recevez 20 €.", "effet": { "type": "recevoir", "montant": 20 } },

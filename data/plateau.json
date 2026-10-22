@@ -1,17 +1,17 @@
 {
   "groupes": {
     "marron": {
-      "nom": "Le Charbon",
-      "nomCourt": "Charbon",
+      "nom": "Charbon Sud",
+      "nomCourt": "Charbon Sud",
       "couleur": "#8B5A2B"
     },
     "bleu-ciel": {
-      "nom": "Le Charbon",
-      "nomCourt": "Charbon",
+      "nom": "Charbon Nord",
+      "nomCourt": "Charbon Nord",
       "couleur": "#7FC8E8"
     },
     "violet": {
-      "nom": "Le Troubadour – Cours Julien",
+      "nom": "Troubadour",
       "nomCourt": "Troubadour",
       "couleur": "#C2459A"
     },
@@ -50,7 +50,7 @@
     {
       "index": 1,
       "type": "propriete",
-      "nom": "Frais-Vallon",
+      "nom": "Château Saint-Loup",
       "groupe": "marron",
       "prix": 60,
       "loyers": [
@@ -72,7 +72,7 @@
     {
       "index": 3,
       "type": "propriete",
-      "nom": "Malpassé",
+      "nom": "Benza",
       "groupe": "marron",
       "prix": 60,
       "loyers": [
@@ -108,7 +108,7 @@
     {
       "index": 6,
       "type": "propriete",
-      "nom": "La Castellane",
+      "nom": "Fond Vert",
       "groupe": "bleu-ciel",
       "prix": 100,
       "loyers": [
@@ -130,7 +130,7 @@
     {
       "index": 8,
       "type": "propriete",
-      "nom": "Fond Vert",
+      "nom": "Frais-Vallon",
       "groupe": "bleu-ciel",
       "prix": 100,
       "loyers": [
@@ -147,7 +147,7 @@
     {
       "index": 9,
       "type": "propriete",
-      "nom": "Château Saint-Loup",
+      "nom": "Malpassé",
       "groupe": "bleu-ciel",
       "prix": 120,
       "loyers": [

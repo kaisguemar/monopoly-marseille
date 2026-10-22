@@ -141,7 +141,7 @@ describe('hypothèques', () => {
 });
 
 describe('enchères', () => {
-  // Enchère sur Malpassé, comme pour un bien repris par la banque.
+  // Enchère sur Benza, comme pour un bien repris par la banque.
   const ouvrir = (n = 3) => {
     const p = creerPartie(n);
     p.etat.encheresEnAttente.push(3);
