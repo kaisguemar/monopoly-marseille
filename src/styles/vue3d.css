@@ -36,7 +36,10 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
   position: fixed; inset: 0; z-index: 1;
   width: auto; height: auto; max-width: none; margin: 0;
   aspect-ratio: auto;
+  /* Rogné sans pouvoir défiler : un défilement demandé par un outil (lecteur d'écran, test
+     automatisé qui clique sur un bouton de la scène…) décalerait toute la scène. */
   overflow: hidden;
+  overflow: clip;
   border-radius: 0;
   /* Mer du large, sous l'horizon, là où le disque de mer de la scène ne va pas. */
   background: #1b5f92;
@@ -443,7 +446,9 @@ html:has(.plateau-conteneur.vue-3d), html:has(.plateau-conteneur.vue-3d) body { 
 /* ------------------------------------------------------------------------- */
 
 .jeu.en-3d { display: block; max-width: none; padding: 0; }
-.jeu.en-3d .barre-laterale { position: fixed; z-index: 20; top: 1rem; right: 1rem; width: 340px; max-height: calc(100vh - 2rem); }
+/* Panneau des actions dans le coin en haut à droite, assez étroit pour laisser le plateau au milieu
+   de l'écran sur un ordinateur portable (voir cadreScene dans camera3d.js). */
+.jeu.en-3d .barre-laterale { position: fixed; z-index: 20; top: 1rem; right: 1rem; width: 300px; max-height: calc(100vh - 2rem); }
 /* Les joueurs sont autour du plateau : les panneaux de la vue à plat se retirent. */
 .jeu.en-3d .panneaux { display: none; }
 .jeu.en-3d .commandes { background: rgba(255, 255, 255, .9); backdrop-filter: blur(8px); box-shadow: 0 6px 24px rgba(4, 30, 50, .35); }

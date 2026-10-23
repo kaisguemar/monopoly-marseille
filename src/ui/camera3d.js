@@ -2,7 +2,7 @@
 // Module pur, sans DOM : ses calculs sont testés avec Node (tests/camera3d.test.js).
 //
 // Les distances sont exprimées en largeurs de « scène » : le cadre de référence de la caméra,
-// de proportions fixes, centré dans l'espace libre de l'écran (le décor déborde tout autour).
+// de proportions fixes, au milieu de l'écran (voir cadreScene ; le décor déborde tout autour).
 // Les constantes d'ÉCRAN reprennent celles de src/styles/vue3d.css : les garder accordées.
 
 export const ECRAN = Object.freeze({
@@ -19,16 +19,26 @@ export const ECRAN = Object.freeze({
 
 export const LIMITES = Object.freeze({ inclinaison: [15, 72], zoom: [0.4, 2.6], decalage: 0.55 });
 
-// Vue de départ : toute la table et ses joueurs, la Corniche derrière.
-export const CAMERA_DEFAUT = Object.freeze({ azimut: 0, inclinaison: 60, zoom: 0.6, decalageX: 0, decalageY: 0 });
+// Cadrage de la vue de départ, qui est aussi celle de chaque joueur quand la caméra suit la partie :
+// le plateau au milieu de l'écran, assez près pour lire les noms des rues de la rangée de devant,
+// et devant soi le tapis du joueur, ses cartes et ses jetons. La Corniche est alors hors champ :
+// on la retrouve en dézoomant.
+// Sur téléphone, l'écran est étroit : le plateau reste un peu plus loin, pour que les étiquettes
+// des joueurs de gauche et de droite n'en cachent pas trop, et la Corniche reste visible.
+export const CADRAGE = Object.freeze({ inclinaison: 60, zoom: 1, decalageY: -0.145 });
+export const CADRAGE_TELEPHONE = Object.freeze({ inclinaison: 58, zoom: 0.82, decalageY: 0.06 });
+export const LARGEUR_TELEPHONE = 700; // même seuil que la mise en page pour téléphone (vue3d.css)
+
+export const CAMERA_DEFAUT = Object.freeze({ azimut: 0, decalageX: 0, ...CADRAGE });
 
 const RAD = Math.PI / 180;
 const borner = (x, min, max) => Math.min(max, Math.max(min, x));
 const nombre = (x, defaut) => (typeof x === 'number' && Number.isFinite(x) ? x : defaut);
 
-// Caméra de départ : un peu moins inclinée et un peu plus loin sur les petits écrans.
+export const cadrage = (largeurEcran = 1000) => (largeurEcran <= LARGEUR_TELEPHONE ? CADRAGE_TELEPHONE : CADRAGE);
+
 export function cameraParDefaut(largeurEcran = 1000) {
-  return largeurEcran < 600 ? { ...CAMERA_DEFAUT, inclinaison: 56, zoom: 0.48 } : { ...CAMERA_DEFAUT };
+  return { ...CAMERA_DEFAUT, ...cadrage(largeurEcran) };
 }
 
 // Ramène une caméra dans les limites autorisées (valeurs manquantes ou invalides : par défaut).
@@ -40,8 +50,8 @@ export function bornerCamera(c = {}) {
     azimut: nombre(c.azimut, CAMERA_DEFAUT.azimut),
     inclinaison: borner(nombre(c.inclinaison, CAMERA_DEFAUT.inclinaison), ...LIMITES.inclinaison),
     zoom,
-    decalageX: borner(nombre(c.decalageX, 0), -decalageMax, decalageMax),
-    decalageY: borner(nombre(c.decalageY, 0), -decalageMax, decalageMax)
+    decalageX: borner(nombre(c.decalageX, CAMERA_DEFAUT.decalageX), -decalageMax, decalageMax),
+    decalageY: borner(nombre(c.decalageY, CAMERA_DEFAUT.decalageY), -decalageMax, decalageMax)
   };
 }
 
@@ -73,20 +83,11 @@ export function azimutVers(actuel, angle) {
   return actuel + ((((-angle - actuel) % 360) + 540) % 360) - 180;
 }
 
-// Vue d'un joueur, quand la caméra suit la partie (sur un même écran) : sa place devant soi, le
-// plateau bien en face, assez près pour lire les cases, tout son tapis visible et la Corniche au
-// loin. Un peu plus rasante que la vue de départ, elle permet un plateau plus grand sans perdre la
-// Corniche. Sur un côté partagé, la vue se décale à moitié vers son tapis (`recentrage`).
-export const VUE_JOUEUR = Object.freeze({ inclinaison: 62, zoom: 0.72, decalageY: -0.025, recentrage: 0.5 });
-
-export function vueJoueur(place, actuelle = CAMERA_DEFAUT) {
-  return bornerCamera({
-    azimut: azimutVers(actuelle.azimut, place.angle),
-    inclinaison: VUE_JOUEUR.inclinaison,
-    zoom: VUE_JOUEUR.zoom,
-    decalageX: -VUE_JOUEUR.recentrage * (place.decalage ?? 0) * ECRAN.echelle * VUE_JOUEUR.zoom,
-    decalageY: VUE_JOUEUR.decalageY
-  });
+// Vue d'un joueur, quand la caméra suit la partie (sur un même écran) : le cadrage de la vue de
+// départ, tourné pour amener sa place devant soi. Le plateau reste au milieu, même pour qui
+// partage un côté avec un autre joueur.
+export function vueJoueur(place, actuelle = CAMERA_DEFAUT, largeurEcran = 1000) {
+  return { ...cameraParDefaut(largeurEcran), azimut: azimutVers(actuelle.azimut, place.angle) };
 }
 
 // Position intermédiaire entre deux caméras (animations), t de 0 à 1.
@@ -129,6 +130,49 @@ export function horizon(c, hauteurVue = ECRAN.hauteurVue) {
     y: bord.y + ECRAN.recouvrement * ECRAN.panorama,
     decalage: (c.azimut / 360) * ECRAN.panorama * ECRAN.rapportPanorama
   };
+}
+
+// Bord droit du plateau à l'écran, au-dessus de la hauteur `yMax` (en largeurs de scène ; -Infinity
+// si le plateau est tout entier plus bas).
+export function bordDroit(c, yMax, hauteurVue = ECRAN.hauteurVue) {
+  const coins = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]].map(([x, y]) => projeter(c, { x, y }, hauteurVue));
+  let droite = -Infinity;
+  coins.forEach((a, k) => {
+    const b = coins[(k + 1) % coins.length];
+    if (a.y <= yMax) droite = Math.max(droite, a.x);
+    if ((a.y - yMax) * (b.y - yMax) < 0) droite = Math.max(droite, a.x + ((b.x - a.x) * (yMax - a.y)) / (b.y - a.y));
+  });
+  return droite;
+}
+
+const MARGE_PANNEAU = 12; // px entre la scène et le panneau des actions
+// Hauteur du panneau des actions au tour d'un joueur (le tour, ses quatre boutons, l'abandon) :
+// la scène s'écarte de lui d'après cette hauteur, et ne bouge donc pas quand il s'allonge ou
+// raccourcit d'un tour à l'autre.
+export const HAUTEUR_PANNEAU = 380;
+
+// Cadre de la scène dans l'écran (en px) : la plus grande scène aux proportions de ECRAN qui tienne
+// dans l'espace laissé libre par le panneau des actions (`panneau` : son rectangle, ou null), à
+// droite sur grand écran, en bas sur téléphone. Elle se place au milieu de l'écran, pour que le
+// plateau y soit centré : le panneau n'en occupe que le coin en haut à droite. Si, dans la vue de
+// départ (`camera`), le plateau passait sous le panneau, elle s'en écarte juste ce qu'il faut, au
+// plus jusqu'au milieu de l'espace libre.
+export function cadreScene(ecran, panneau = null, camera = CAMERA_DEFAUT) {
+  const libre = { gauche: 0, haut: 0, droite: ecran.largeur, bas: ecran.hauteur };
+  const aDroite = Boolean(panneau) && panneau.gauche > ecran.largeur / 2;
+  if (aDroite) libre.droite = Math.max(ecran.largeur / 2, panneau.gauche - MARGE_PANNEAU);
+  else if (panneau && panneau.haut > ecran.hauteur * 0.35) libre.bas = ecran.hauteur * 0.6;
+  const largeurLibre = libre.droite - libre.gauche;
+  const hauteurLibre = libre.bas - libre.haut;
+  const largeur = Math.max(160, Math.min(largeurLibre, hauteurLibre / ECRAN.hauteurVue));
+  const haut = libre.haut + (hauteurLibre - largeur * ECRAN.hauteurVue) / 2;
+  let gauche = (ecran.largeur - largeur) / 2;
+  if (aDroite) {
+    const bas = (panneau.haut + HAUTEUR_PANNEAU - haut) / largeur;
+    const auMilieuDuLibre = libre.gauche + (largeurLibre - largeur) / 2;
+    gauche = Math.max(auMilieuDuLibre, Math.min(gauche, libre.droite - bordDroit(camera, bas) * largeur));
+  }
+  return { largeur, hauteur: largeur * ECRAN.hauteurVue, gauche, haut };
 }
 
 // Lecture et écriture de la caméra mémorisée (null si absente ou illisible).

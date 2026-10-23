@@ -7,11 +7,12 @@
 import { el } from './utilitaires.js';
 import {
   ECRAN, cameraParDefaut, bornerCamera, orbiter, deplacer, zoomer, interpoler, azimutDeFace, azimutVers,
-  vueJoueur, projeter, horizon, lireCamera, ecrireCamera
+  vueJoueur, projeter, horizon, cadreScene, lireCamera, ecrireCamera
 } from './camera3d.js';
 
 const CLE_VUE = 'monopoly-marseille-vue3d';
-const CLE_CAMERA = 'monopoly-marseille-camera3d-table';
+// Changée avec la vue de départ : chacun la découvre, au lieu d'une caméra réglée pour l'ancienne.
+const CLE_CAMERA = 'monopoly-marseille-camera3d-v3';
 const CLE_AIDE = 'monopoly-marseille-aide3d';
 const CLE_SUIVI = 'monopoly-marseille-suivi3d';
 
@@ -34,7 +35,7 @@ function ecrire(cle, valeur) {
 const mouvementReduit = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 // Entre `min` et `max` ; s'il n'y a pas la place, contre `min` (le bord gauche ou le haut de l'écran).
 const borner = (valeur, min, max) => Math.max(min, Math.min(max, valeur));
-const MARGE_ETIQUETTE = 6; // px entre une étiquette et le bord de l'espace libre
+const MARGE_ETIQUETTE = 6; // px entre une étiquette et le bord de l'écran
 
 // Caméra de la partie affichée : sa position est enregistrée quand on quitte la page, même
 // au milieu du délai d'enregistrement.
@@ -45,9 +46,9 @@ window.addEventListener('pagehide', () => cameraAffichee?.enregistrer(true));
 const POSE_A_PLAT = Object.freeze({ inclinaison: 0, zoom: 1 / ECRAN.echelle, decalageX: 0, decalageY: -ECRAN.decalageY });
 
 // Construit la scène dans `conteneur`. `panneau` : le panneau des actions, qui flotte par-dessus
-// la vue 3D (la scène se cadre dans l'espace qu'il laisse libre). Renvoie l'élément qui accueillera
-// le plateau, le bouton de bascule entre vue à plat et vue 3D, la table où s'installent les joueurs
-// (posée sur le ponton), le calque de leurs étiquettes et la caméra.
+// la vue 3D (le plateau ne passe pas dessous). Renvoie l'élément qui accueillera le plateau, le
+// bouton de bascule entre vue à plat et vue 3D, la table où s'installent les joueurs (posée sur le
+// ponton), le calque de leurs étiquettes et la caméra.
 export function creerScene(conteneur, { panneau = null } = {}) {
   const plateau = el('div', { class: 'plateau' });
   // Table des joueurs : leurs tapis, à plat avec les cartes posées dessus, puis ce qui s'y tient debout.
@@ -83,7 +84,8 @@ class Camera3D {
     this.surBascule = null;
     this.pointeurs = new Map();
     this.dims = { largeur: 0, hauteur: 0 };
-    this.libre = { gauche: 0, haut: 0, droite: 0, bas: 0 };
+    this.ecran = { largeur: 0, hauteur: 0 };
+    this.obstacles = [];
     this.resolution = 1;
     this.camera = lireCamera(lire(CLE_CAMERA)) ?? cameraParDefaut(window.innerWidth);
     this.vue = { ...this.camera };
@@ -104,10 +106,13 @@ class Camera3D {
     conteneur.addEventListener('wheel', (e) => this.surMolette(e), { passive: false });
     conteneur.addEventListener('click', (e) => this.surClic(e), true);
     conteneur.addEventListener('contextmenu', (e) => { if (this.actif) e.preventDefault(); });
-    new ResizeObserver(() => {
+    // Le panneau des actions change de taille selon ce qu'on peut faire : les étiquettes le contournent.
+    const observateur = new ResizeObserver(() => {
       this.mesurer();
       this.rendre();
-    }).observe(conteneur);
+    });
+    observateur.observe(conteneur);
+    if (panneau) observateur.observe(panneau);
     this.afficher(lire(CLE_VUE) === '1', false);
   }
 
@@ -165,7 +170,7 @@ class Camera3D {
   allerVersJoueur() {
     // En plein geste, la caméra attend que le doigt (ou la souris) se lève.
     this.suivi.enAttente = this.pointeurs.size > 0;
-    if (!this.suivi.enAttente) this.animerVers(vueJoueur(this.suivi.place, this.camera), { duree: 900 });
+    if (!this.suivi.enAttente) this.animerVers(vueJoueur(this.suivi.place, this.camera, window.innerWidth), { duree: 900 });
   }
 
   // ⌖ : retour à la vue du joueur suivi, ou à la vue de départ.
@@ -178,26 +183,21 @@ class Camera3D {
   // Affichage
   // ---------------------------------------------------------------------------
 
-  // Cadre de la scène : la plus grande scène aux proportions de ECRAN qui tienne dans l'espace laissé
-  // libre par le panneau des actions (à droite sur grand écran, en bas sur téléphone), centrée.
-  // Le décor, lui, couvre tout l'écran.
+  // Cadre de la scène, au milieu de l'écran, à l'écart du panneau des actions (voir cadreScene).
+  // Le décor, lui, couvre tout l'écran ; les étiquettes vont partout, sauf sous le panneau et la
+  // barre de la caméra.
   mesurer() {
     if (!this.actif) return;
     const ecran = this.conteneur.getBoundingClientRect();
-    const libre = { x: 0, y: 0, largeur: ecran.width, hauteur: ecran.height };
-    const panneau = this.panneau?.getBoundingClientRect();
-    if (panneau?.width && panneau.left > ecran.width / 2) libre.largeur = Math.max(ecran.width * 0.5, panneau.left - ecran.left - 12);
-    else if (panneau?.width && panneau.top > ecran.height * 0.35) libre.hauteur = ecran.height * 0.6;
-    const largeur = Math.max(160, Math.min(libre.largeur, libre.hauteur / ECRAN.hauteurVue));
-    const gauche = libre.x + (libre.largeur - largeur) / 2;
-    const haut = libre.y + (libre.hauteur - largeur * ECRAN.hauteurVue) / 2;
-    this.dims = { largeur, hauteur: largeur * ECRAN.hauteurVue, gauche, haut };
-    this.libre = { gauche: libre.x, haut: libre.y, droite: libre.x + libre.largeur, bas: libre.y + libre.hauteur };
-    // Les étiquettes contournent aussi la barre de la caméra.
-    const barre = this.commandes.getBoundingClientRect();
-    this.barre = barre.width
-      ? { gauche: barre.left - ecran.left, haut: barre.top - ecran.top, droite: barre.right - ecran.left, bas: barre.bottom - ecran.top }
-      : null;
+    const rectangle = (element) => {
+      const r = element?.getBoundingClientRect();
+      return r?.width ? { gauche: r.left - ecran.left, haut: r.top - ecran.top, droite: r.right - ecran.left, bas: r.bottom - ecran.top } : null;
+    };
+    const panneau = rectangle(this.panneau);
+    this.ecran = { largeur: ecran.width, hauteur: ecran.height };
+    this.dims = cadreScene(this.ecran, panneau, cameraParDefaut(ecran.width));
+    this.obstacles = [rectangle(this.commandes), panneau].filter(Boolean);
+    const { largeur, gauche, haut } = this.dims;
     const style = this.conteneur.style;
     style.setProperty('--scene-s', `${largeur.toFixed(1)}px`);
     style.setProperty('--scene-gauche', `${gauche.toFixed(1)}px`);
@@ -237,8 +237,9 @@ class Camera3D {
   }
 
   // Les étiquettes des joueurs suivent leur place sur la table (data-ancre-x/y, en plateaux) ;
-  // elles restent nettes et lisibles, un peu plus grandes de près, et entières à l'écran, hors du
-  // panneau des actions et de la barre de la caméra : celle d'une place hors champ attend au bord.
+  // elles restent nettes et lisibles, un peu plus grandes de près, et entières à l'écran : celle
+  // d'une place hors champ attend au bord. Sur le panneau des actions ou la barre de la caméra,
+  // elle passe au-dessous (au-dessus s'ils sont en bas de l'écran).
   placerEtiquettes(c = this.vue) {
     if (!this.actif || !this.dims.largeur) return;
     const { largeur, gauche, haut } = this.dims;
@@ -253,12 +254,12 @@ class Camera3D {
       const taille = Math.min(1.15, Math.max(0.72, 0.5 + 0.7 * c.zoom * p.fuite));
       const demiLargeur = (tailles[k].largeur * taille) / 2 + MARGE_ETIQUETTE;
       const demiHauteur = (tailles[k].hauteur * taille) / 2 + MARGE_ETIQUETTE;
-      const ex = borner(gauche + p.x * largeur, this.libre.gauche + demiLargeur, this.libre.droite - demiLargeur);
-      let ey = borner(haut + p.y * largeur, this.libre.haut + demiHauteur, this.libre.bas - demiHauteur);
-      const b = this.barre;
-      if (b && ex + demiLargeur > b.gauche && ex - demiLargeur < b.droite && ey + demiHauteur > b.haut && ey - demiHauteur < b.bas) {
-        // Sur la barre de la caméra : l'étiquette passe au-dessus (au-dessous si la barre est en haut).
-        ey = b.haut > (this.libre.haut + this.libre.bas) / 2 ? b.haut - demiHauteur : b.bas + demiHauteur;
+      const ex = borner(gauche + p.x * largeur, demiLargeur, this.ecran.largeur - demiLargeur);
+      let ey = borner(haut + p.y * largeur, demiHauteur, this.ecran.hauteur - demiHauteur);
+      for (const o of this.obstacles) {
+        if (ex + demiLargeur > o.gauche && ex - demiLargeur < o.droite && ey + demiHauteur > o.haut && ey - demiHauteur < o.bas) {
+          ey = o.haut > this.ecran.hauteur / 2 ? o.haut - demiHauteur : o.bas + demiHauteur;
+        }
       }
       etiquette.style.transform = `translate(${ex.toFixed(1)}px, ${ey.toFixed(1)}px) translate(-50%, -50%) scale(${taille.toFixed(3)})`;
     });
@@ -273,7 +274,7 @@ class Camera3D {
   // vue3d.css), avec une marge pour ne pas basculer sans cesse. Elle change une fois la caméra
   // immobile : remettre le plateau en page prend un instant, mieux vaut ne pas le faire en plein geste.
   ajusterResolution(zoom) {
-    const voulue = zoom > 1.5 ? 2 : zoom < 1.3 ? 1 : this.resolution;
+    const voulue = zoom > 1.2 ? 2 : zoom < 1.1 ? 1 : this.resolution;
     clearTimeout(this.minuteurResolution);
     if (voulue === this.resolution) return;
     this.minuteurResolution = setTimeout(() => {
