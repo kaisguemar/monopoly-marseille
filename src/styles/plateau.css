@@ -31,6 +31,9 @@
   cursor: pointer;
 }
 .case:hover { background: #fffdf7; }
+/* Ce qui s'imprime sur la case : à plat, ses éléments se rangent directement dans la case ;
+   en 3D, ils sont tournés vers l'extérieur de leur côté (vue3d.css). */
+.face-case { display: contents; }
 .case.surbrillance { outline: 3px solid var(--ocre); outline-offset: -3px; z-index: 2; }
 .case:focus-visible { outline-offset: -3px; z-index: 2; }
 

@@ -39,6 +39,7 @@ node --test
 - les données, le moteur de règles et l'IA, y compris des parties complètes simulées entre ordinateurs ;
 - le **mode en ligne** : salon d'attente et droits de l'hôte, impossibilité de jouer à la place d'un autre, diffusion des mises à jour, déconnexion et reconnexion (rechargement, coupure, autre appareil), remplacement par l'ordinateur et retour du joueur, sauvegarde et redémarrage du serveur ;
 - le **mode Pastis** : gorgées de chaque règle, cartes à boire et remplacement des cartes, parties complètes entre ordinateurs, et partie en ligne où tous les écrans reçoivent les mêmes gorgées ;
+- la **caméra de la vue 3D** (limites, gestes, zoom qui garde le point visé, horizon de la Corniche qui suit l'inclinaison et défile quand on tourne, vue de départ assez proche pour lire les noms des rues, la même pour chaque joueur quand elle suit la partie : sa place devant, le plateau entier au milieu, ses cartes et ses jetons ; scène au milieu de l'écran sans passer sous le panneau des actions, sur grand écran comme sur téléphone), la **table des joueurs** (chacun face à un côté du plateau, dans le sens du jeu, sans que les tapis se touchent ; jetons de casino qui valent exactement l'argent du joueur ; jetons et verres du mode Pastis qui tiennent sur les tapis étroits ; colonnes de cartes) et les **images générées** (à jour, bien formées, aux proportions des bâtiments en 3D) ;
 - le **serveur HTTP réel** : fichiers servis (et ceux qui ne doivent pas l'être), API, flux SSE, et des parties complètes jouées de bout en bout par des clients qui ne communiquent que par HTTP, avec coupures réseau en cours de partie.
 
 ## Comment jouer
@@ -47,9 +48,21 @@ node --test
 2. Cliquez sur **Nouvelle partie** (ou **Reprendre la partie** si une sauvegarde existe).
 3. À votre tour : **Lancer les dés**, puis répondez aux fenêtres (achat, carte, dette…), et **Finir le tour**. Les boutons de la colonne de droite permettent de construire, d'hypothéquer et de proposer des échanges.
 4. Cliquez sur une case du plateau (ou sur une propriété dans un panneau joueur) pour afficher sa fiche : prix, loyers, propriétaire.
-5. Le bouton **🧊 Vue 3D** (sous « Tour… », à droite) incline le plateau et l'entoure d'un décor marseillais : la mer, les calanques, la Bonne Mère, les façades du port, un phare et des bateaux. Les maisons et les hôtels y sont en volume, aux couleurs de leur propriétaire, et les pions se tiennent debout. **🗺️ Vue à plat** revient au plateau vu de dessus ; le choix est retenu par le navigateur.
+5. Le bouton **🧊 Vue 3D** (sous « Tour… », à droite) passe en plein écran : le plateau est posé sur un ponton de bois au milieu de la mer, face à la **Corniche** : la route et sa longue balustrade blanche, le monument aux morts de l'Armée d'Orient, le viaduc du Vallon des Auffes et ses cabanons, la plage, et Notre-Dame de la Garde sur sa colline. La mer est animée (vagues et reflets du soleil emportés par un lent courant autour du ponton, écume contre son bord, bateaux qui tanguent, mouettes et nuages). La vue s'ouvre de près, le plateau au milieu de l'écran : les noms des rues de la rangée de devant se lisent. Dézoomez (**−** ou molette) pour embrasser la baie et la Corniche. Le panneau des actions flotte par-dessus (en haut à droite, ou en bas sur téléphone). **🗺️ Vue à plat** revient au plateau vu de dessus ; le choix est retenu par le navigateur.
+6. En 3D, les joueurs sont **assis autour du plateau**, chacun face à un côté, dans le sens du jeu : face à face à deux, un par côté à quatre, deux sur certains côtés à cinq et six. Chacun a devant lui un tapis de feutre à sa couleur (celui qui a la main s'illumine), avec :
+   - son **argent en jetons de casino** : violet 500 €, noir 100 €, vert 20 €, rouge 5 €, blanc 1 € ;
+   - ses **titres de propriété**, posés en colonnes par quartier ; une carte hypothéquée est retournée. Cliquer sur une carte ouvre sa fiche ;
+   - en mode Pastis, un **verre à shooter** par gorgée bue et un grand verre par cul sec.
 
-Dans les deux vues, les maisons et les hôtels sont dessinés aux couleurs du joueur qui les possède, à la place du nom du quartier sur le bandeau de couleur.
+   Une étiquette accrochée à sa place donne son nom, son argent exact, ses gorgées et son statut (Baumettes, ordinateur, déconnecté…). Cliquer sur le nom tourne la table pour amener ce joueur devant soi. En ligne, sa propre place est devant.
+7. **Sur un même écran** (une télé, par exemple), la caméra **suit le joueur dont c'est le tour** : quand la main passe, la table tourne pour amener sa place devant, son tapis bien visible et le plateau bien en face. Comme sur un vrai plateau, les noms des cases sont tournés vers l'extérieur de leur côté : chacun lit les siens à l'endroit depuis sa place. Le centre du plateau (journal, dés) se tourne vers lui. Le bouton **🎥**, allumé, active ce suivi ; éteint, la caméra reste libre.
+8. La caméra se déplace aussi à la main :
+   - **glisser** fait tourner la table (de gauche à droite) et l'incline (de haut en bas) ; la Corniche défile tout autour de la baie ;
+   - **molette** ou **pincer à deux doigts** : zoom, vers le point visé ;
+   - **Maj + glisser**, clic droit ou deux doigts : déplacer la vue ;
+   - les boutons en haut à gauche (en haut à droite sur téléphone) font la même chose au clavier (tourner, incliner, zoomer) et **⌖** recentre la vue, sur le joueur dont c'est le tour quand la caméra le suit. Un simple clic sur une case ou sur une carte ouvre toujours sa fiche. Quand la caméra suit la partie, on peut regarder ailleurs : elle rejoint le joueur suivant quand la main passe.
+
+Les maisons sont de petits cabanons marseillais (crépi, génoise, volets, toit de tuiles canal) et les hôtels des immeubles à balcons de fer forgé, avec leur enseigne et un toit-terrasse marqué d'un « H ». Dans les deux vues, leurs murs prennent la couleur du joueur qui les possède, à la place du nom du quartier sur le bandeau de couleur.
 
 Le jeu se joue entièrement au clavier : le bouton d'action principal reçoit le focus à chaque tour (Entrée pour lancer les dés), les fenêtres gardent le focus et se ferment avec Échap quand c'est possible.
 
@@ -130,6 +143,22 @@ Le cahier des charges laisse quelques points ouverts. Voici les choix retenus, l
 - Les ordinateurs « boivent » aussi : leurs compteurs servent à animer la partie, à chacun de décider si un humain boit pour eux.
 - Les gorgées ne demandent aucune décision de jeu, mais chaque bulle attend son « Santé ! » : la partie reprend sur cet écran une fois la bulle fermée (les ordinateurs d'une partie locale attendent aussi). En ligne, chacun ferme les bulles sur son propre écran ; le serveur continue de jouer, et les mises à jour reçues entre-temps s'affichent ensuite dans l'ordre.
 
+**Vue 3D**
+- Tout est en CSS 3D, sans bibliothèque : chaque mur, pignon et pan de toit est un élément habillé d'une image SVG. Les murs des images sont transparents, et la couleur du propriétaire est posée dessous.
+- Les images (façades, toits, icônes, vagues, panorama) sont **générées par un script** sans dépendance, `outils/generer-images.mjs`, et versionnées dans `assets/` : le jeu n'a toujours aucune étape de construction. Un test vérifie que les fichiers sont à jour.
+- Le panorama de la Corniche fait le tour de l'horizon : ses deux bords se raccordent, et il défile quand le plateau tourne. C'est une évocation dessinée, pas une vue géographiquement exacte.
+- Sous une perspective, le navigateur dessine le plateau à sa taille de mise en page, puis l'agrandit : il deviendrait flou en zoomant. Dès qu'on zoome un peu plus près que la vue de départ (zoom 1,2), le plateau et la table des joueurs sont donc mis en page en double taille et réduits d'autant, une fois le geste terminé. À l'inverse, la mer et le ponton sont dessinés en plus petit, ce qui ménage la mémoire graphique, et la mer tient en un seul disque, sans découpe : en plein écran, chaque grand calque se paie à chaque image.
+- La vue 3D occupe tout l'écran, le plateau au milieu. Le panneau des actions n'en couvre que le coin en haut à droite : la scène ne s'en écarte que si le plateau passait dessous (sur un écran de portable un peu étroit), et juste ce qu'il faut. Elle s'en écarte d'après sa hauteur au tour d'un joueur, et ne bouge donc pas quand il s'allonge ou raccourcit. Les panneaux des joueurs de la vue à plat laissent la place à la table.
+- Les places, les piles de jetons, les verres et les colonnes de cartes sont calculés par un module sans DOM, testé (`table3d.js`). Les jetons de 500 € n'apparaissent qu'au-delà de 1 000 €, pour garder des piles de 100 € bien visibles ; une pile compte au plus 10 jetons et une valeur au plus 4 piles, au-delà l'étiquette donne le montant exact. De même, au plus 20 verres à shooter (12 sur un tapis partagé) et 4 grands verres, puis « +N ».
+- Les joueurs s'assoient face aux côtés du plateau, et non en cercle : ainsi, quand la caméra suit un joueur, le plateau est toujours vu bien en face, jamais de biais. À cinq et six, deux joueurs partagent un côté : leurs deux tapis tiennent côte à côte devant le plateau, qui reste au milieu de l'écran.
+- La vue d'un joueur est la vue de départ, tournée vers sa place : le plateau assez grand pour lire les noms des rues de sa rangée (environ 13 px de large et 8 de haut sur un écran de 1920 × 1080), et devant lui ses cartes et ses jetons. La Corniche est alors hors champ : pour la garder, il fallait reculer la caméra au point que les noms devenaient illisibles. Sur téléphone, le plateau reste un peu plus loin, pour que les étiquettes des joueurs de côté n'en cachent pas trop, et la Corniche reste visible.
+- Le suivi n'existe qu'en partie locale : en ligne, chacun a déjà sa place devant lui. Il reste actif tant qu'on ne l'éteint pas (choix retenu par le navigateur), et la caméra rejoint le joueur dont c'est le tour quand on recharge la page.
+- L'orientation « plateau classique » des cases ne vaut qu'en 3D, où la table tourne : la vue à plat, toujours regardée du même côté, garde ses textes à l'endroit.
+- La table est peinte avec le décor, sur le ponton : d'abord les tapis à plat (cartes comprises), puis les jetons et les verres, debout. Dans une même scène 3D, Chromium découpe les surfaces selon le plan des éléments dressés (tranches du plateau, pions) et des morceaux de tapis disparaissaient.
+- Les étiquettes des joueurs sont du HTML posé par-dessus la scène, à l'endroit calculé par la caméra : toujours nettes, elles restent entières à l'écran (celle d'une place hors champ attend au bord), sans se glisser sous le panneau des actions ni sous la barre de la caméra.
+- La caméra est propre à chaque écran (y compris en ligne) et n'a aucun effet sur la partie. Avec le réglage « réduire les animations » du système, la mer, les bateaux, les mouettes et le tapis du joueur actif restent immobiles et la caméra change de position sans animation.
+- En vue 3D, glisser un doigt n'importe où sur la scène la fait tourner : seul le panneau des actions défile.
+
 **Ordinateurs et interface**
 - L'IA propose au plus un échange par tour, et seulement un tour sur trois, pour ne pas harceler les humains.
 - Les actions de l'ordinateur sont temporisées (de 0,25 s à 1,2 s selon la vitesse choisie) et attendent qu'une fenêtre ouverte par un humain soit fermée.
@@ -160,7 +189,10 @@ src/
     controleur.js       relie le moteur (local) ou le serveur (en ligne) à l'interface, rejoue les animations
     plateau.js          plateau 11 × 11, centre, pions
     des.js              dés 3D animés
-    vue3d.js            vue 3D : scène inclinée, décor, maisons et hôtels en volume, bouton de bascule
+    vue3d.js            vue 3D : scène, mer et horizon, gestes de la caméra, maisons et hôtels en volume
+    camera3d.js         calculs de la caméra 3D (limites, gestes, projection, horizon), sans DOM
+    joueurs3d.js        joueurs autour du plateau en 3D : tapis, jetons, cartes, verres, étiquettes
+    table3d.js          calculs de la table (places, jetons, verres, colonnes de cartes), sans DOM
     panneaux.js         panneaux des joueurs (et présence en ligne)
     fiche.js            fiche de propriété
     gestion.js          constructions, hypothèques, enchères, échanges, faillite
@@ -175,7 +207,11 @@ src/
 data/
   plateau.json          les 40 cases et les 8 quartiers
   cartes.json           16 cartes Chance + 16 cartes Caisse de communauté, et les 10 cartes du mode Pastis
-assets/                 icône du jeu
+assets/                 icône du jeu ; images générées de la vue 3D :
+  batiments/            façades, pignons, toits et icônes des maisons et des hôtels
+  decor/                panorama de la Corniche, vagues et reflets de la mer, ponton de bois, feutre des tapis
+outils/
+  generer-images.mjs    génère les images de assets/ (node outils/generer-images.mjs)
 tests/                  tests unitaires et d'intégration (node --test)
 docs/                   cahier des charges et règles du jeu
 ```
@@ -233,5 +269,9 @@ Actions disponibles : `lancer`, `acheter`, `refuserAchat`, `encherir`, `passerEn
 - [x] Multijoueur en ligne avec reconnexion
 - [x] Mode Pastis : thème jaune et bleu, gorgées et cartes à boire, en local comme en ligne
 - [x] Vue 3D avec décor, maisons et hôtels aux couleurs du propriétaire
+- [x] Vue 3D : caméra libre (tourner, incliner, zoomer, déplacer), mer animée, Corniche à l'horizon, maisons et hôtels illustrés
+- [x] Vue 3D en plein écran, joueurs assis autour du plateau : jetons de casino, titres de propriété, verres à shooter du mode Pastis
+- [x] Vue 3D sur un même écran : la caméra suit le joueur dont c'est le tour, cases orientées comme sur un plateau classique
+- [x] Vue 3D : vue de départ rapprochée et centrée, noms des rues lisibles
 
 Idées pour la suite : sons (cigales, sirène du port), statistiques de fin de partie, chat dans le salon.
